@@ -1,0 +1,93 @@
+networks:
+  default:
+    external: true
+    name: ksd
+
+volumes:
+  prometheus: {}
+  grafana: {}
+  tempo: {}
+  kafka-ui: {}
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.53.4
+    hostname: prometheus
+    container_name: ksdm-prometheus
+    healthcheck:
+      test: wget --spider http://localhost:9090/ || exit 1
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    privileged: true
+
+    # web: enable-admin-api and enable-lifecycle
+    # other command options are the default (but need to be supplied in full to add the others)
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--web.enable-admin-api"
+      - "--web.enable-lifecycle"
+      - "--web.enable-remote-write-receiver"
+      # not actual setting...- "--query.staleness-delta=60s"
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus:/prometheus
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/micrometer_application_streams.json:/etc/prometheus/micrometer_application_streams.json
+
+  grafana:
+    image: grafana/grafana:11.5.2
+    #image: grafana/grafana:main
+    hostname: grafana
+    container_name: ksdm-grafana
+    healthcheck:
+      test: wget --spider --tries=1 http://localhost:3000/api/health || exit 1
+      start_period: 10s
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    #      tempo:
+    #        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: grafana
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_DEFAULT_APP_MODE: development
+      #GF_INSTALL_PLUGINS: "grafana-piechart-panel"
+      #GF_INSTALL_PLUGINS: "grafana-piechart-panel,ke-kafkastreamstopology-panel"
+    volumes:
+      - grafana:/var/lib/grafana
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      #- ./grafana/contactpoints.yml:/etc/grafana/provisioning/alerting/contactpoints.yml
+      - ./grafana/prometheus.yml:/etc/grafana/provisioning/datasources/prometheus.yml
+      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      #- ./plugins:/var/lib/grafana/plugins
+
+  tempo:
+    image: grafana/tempo:2.6.1
+    #image: grafana/tempo:2.7.1
+    hostname: tempo
+    container_name: ksdm-tempo
+    healthcheck:
+      test: wget --spider http://localhost:3200/status || exit 1
+      start_period: 10s
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    command: ["-config.file=/etc/tempo/config.yml"]
+    ports:
+      - "3200:3200"
+    volumes:
+      #- tempo:/tmp/tempo
+      - ./tempo/config.yml:/etc/tempo/config.yml
+

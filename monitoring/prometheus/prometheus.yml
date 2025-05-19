@@ -1,0 +1,75 @@
+global:
+  scrape_interval: 2s
+
+scrape_configs:
+  - job_name: kafka
+    scrape_interval: 30s
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+        - controller-0:7071
+        - broker-1:7071
+        - broker-2:7071
+        - broker-3:7071
+        - broker-4:7071
+        labels:
+          cluster_type: "kafka"
+          job: "kafka-core"
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '(.*):(.*)'
+        target_label: instance
+        replacement: '$1'
+  - job_name: micrometer_applications
+    scrape_interval: 5s
+    metrics_path: /metrics
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/micrometer_application_*.json
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '(.*):(.*)'
+        target_label: instance
+        replacement: '$1'
+    metric_relabel_configs:
+      - source_labels: [rocksdb_state_id,rocksdb_window_state_id,rocksdb_session_state_id,in_memory_state_id,in_memory_window_state_id,in_memory_lru_state_id,in_memory_suppression_state_id]
+        separator: '' # ; is the default, but since only one of the source labels is ever defined, we remove this separator
+        target_label: state_id
+        regex: '(.+)'
+        replacement: '$1'
+        action: replace
+      - source_labels: [rocksdb_state_id]
+        target_label: "store_type"
+        regex: ".+"
+        replacement: "rocksdb_state"
+        action: replace
+      - source_labels: [rocksdb_window_state_id]
+        target_label: "store_type"
+        regex: ".+"
+        replacement: "rocksdb_window_state"
+        action: replace
+      - source_labels: [rocksdb_session_state_id]
+        target_label: "store_type"
+        regex: ".+"
+        replacement: "rocksdb_session_state"
+        action: replace
+      - source_labels: [in_memory_state_id]
+        target_label: "store_type"
+        regex: ".+"
+        replacement: "in_memory_state"
+        action: replace
+      - source_labels: [in_memory_window_state_id]
+        target_label: "store_type"
+        regex: ".+"
+        replacement: "in_memory_window_state"
+        action: replace
+      - source_labels: [in_memory_lru_state_id]
+        target_label: "store_type"
+        regex: ".+"
+        replacement: "in_memory_lru_state"
+        action: replace
+      - source_labels: [in_memory_suppression_state_id]
+        target_label: "store_type"
+        regex: ".+"
+        replacement: "in_memory_suppression_state"
+        action: replace

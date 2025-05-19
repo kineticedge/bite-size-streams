@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphViz Rendering</title>
+
+<!--    <script src="https://d3js.org/d3.v7.js"></script>-->
+<!--    <script src="https://unpkg.com/@hpcc-js/wasm@2.16.1/dist/graphviz.umd.js"></script>-->
+<!--    <script src="https://unpkg.com/d3-graphviz@5/build/d3-graphviz.js"></script>-->
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script
+            src="https://unpkg.com/@hpcc-js/wasm@2.16.2/dist/graphviz.umd.js"
+            type="javascript/worker"
+    ></script>
+    <script src="https://unpkg.com/d3-graphviz@5.6.0/build/d3-graphviz.js"></script>
+
+
+<!--    &lt;!&ndash; Include d3.js &ndash;&gt;-->
+<!--    <script src="https://d3js.org/d3.v6.min.js"></script>-->
+<!--    &lt;!&ndash; Include d3-graphviz &ndash;&gt;-->
+<!--    <script src="https://unpkg.com/d3-graphviz@3/build/d3-graphviz.min.js"></script>-->
+
+<!--&lt;!&ndash;    <script src="../node_modules/d3/dist/d3.js"></script>&ndash;&gt;-->
+<!--&lt;!&ndash;    <script src="../node_modules/@hpcc-js/wasm/dist/graphviz.umd.js" type="text/javascript"></script>&ndash;&gt;-->
+<!--&lt;!&ndash;    <script src="../build/d3-graphviz.js"></script>&ndash;&gt;-->
+
+
+<!--    <script src="https://unpkg.com/@hpcc-js/wasm/dist/graphviz.umd.js" type="application/javascript/"></script>-->
+<!--&lt;!&ndash;    <script src="https://unpkg.com/@hpcc-js/wasm/dist/graphviz.umd.js" type="javascript/worker"></script>&ndash;&gt;-->
+
+<!--    <style>-->
+<!--        /* Style the graph container */-->
+<!--        #graph {-->
+<!--            width: 100%;-->
+<!--            height: 1200px;-->
+<!--            border: 1px solid #ccc;-->
+<!--            margin: 20px auto;-->
+<!--            background-color: #f9f9f9;-->
+<!--        }-->
+<!--    </style>-->
+</head>
+<body>
+<h1 style="text-align: center;">GraphViz GOT-based Graph</h1>
+<div id="graph"></div> <!-- This is where the graph will be rendered -->
+
+<script>
+    // The GraphViz DOT string definition
+    const dot = `
+        graph {
+            grandparent -- "parent A";
+            child;
+            "parent B" -- child;
+            grandparent --  "parent B";
+        }
+        `;
+
+    // Render the GraphViz graph
+    // d3.select("#graph") // Target the container
+    //     .graphviz() // Initialize the Graphviz renderer
+    //     .width(document.getElementById("graph").offsetWidth) // Container width
+    //     .height(document.getElementById("graph").offsetHeight) // Container height
+    //     .renderDot(dot); // Render the DOT string
+
+    const x = `
+    Topology
+Sub-topologies:
+Sub-topology: 0
+\tSource:  KSTREAM-SOURCE-0000000000 (topics: [conversation-meta])
+\t--> KSTREAM-TRANSFORM-0000000001
+\tProcessor: KSTREAM-TRANSFORM-0000000001 (stores: [conversation-meta-state])
+\t--> KSTREAM-KEY-SELECT-0000000002
+\t<-- KSTREAM-SOURCE-0000000000
+\tProcessor: KSTREAM-KEY-SELECT-0000000002 (stores: [])
+\t--> KSTREAM-FILTER-0000000005
+\t<-- KSTREAM-TRANSFORM-0000000001
+\tProcessor: KSTREAM-FILTER-0000000005 (stores: [])
+\t--> KSTREAM-SINK-0000000004
+\t<-- KSTREAM-KEY-SELECT-0000000002
+\tSink: KSTREAM-SINK-0000000004 (topic: count-resolved-repartition)
+\t<-- KSTREAM-FILTER-0000000005
+Sub-topology: 1
+\tSource: KSTREAM-SOURCE-0000000006 (topics: [count-resolved-repartition])
+\t--> KSTREAM-AGGREGATE-0000000003
+\tProcessor: KSTREAM-AGGREGATE-0000000003 (stores: [count-resolved])
+\t--> KTABLE-TOSTREAM-0000000007
+\t<-- KSTREAM-SOURCE-0000000006
+\tProcessor: KTABLE-TOSTREAM-0000000007 (stores: [])
+\t--> KSTREAM-SINK-0000000008
+\t<-- KSTREAM-AGGREGATE-0000000003
+\tSink: KSTREAM-SINK-0000000008 (topic: streams-count-resolved)
+\t<-- KTABLE-TOSTREAM-0000000007
+\t\t\t`
+
+    function convertTopoToDot(topo) {
+        var lines = topo.split('\n');
+        var results = [];
+        var outside = [];
+        var stores = new Set();
+        var topics = new Set();
+        var entityName;
+
+        // dirty but quick parsing
+        lines.forEach(line => {
+            var sub = /Sub-topology: ([0-9]*)/;
+            var match = sub.exec(line);
+
+            if (match) {
+                if (results.length) results.push(`}`);
+                results.push(`subgraph cluster_${match[1]} {
+			label = "${match[0]}";
+
+			style=filled;
+			color=lightgrey;
+			node [style=filled,color=white];
+			`);
+
+                return;
+            }
+
+            match = /(Source\:|Processor\:|Sink:)\s+(\S+)\s+\((topics|topic|stores)\:(.*)\)/.exec(line)
+
+            if (match) {
+                entityName = processName(match[2]);
+                var type = match[3]; // source, processor or sink
+                var linkedNames = match[4];
+                linkedNames = linkedNames.replace(/\[|\]/g, '');
+                linkedNames.split(',').forEach(linkedName => {
+                    linkedName = processName(linkedName.trim());
+
+                    if (linkedName === '') {
+                        // short circuit
+                    }
+                    else if (type === 'topics') {
+                        // from
+                        outside.push(`"${linkedName}" -> "${entityName}";`);
+                        topics.add(linkedName);
+                    }
+                    else if (type === 'topic') {
+                        // to
+                        outside.push(`"${entityName}" -> "${linkedName}";`);
+                        topics.add(linkedName);
+                    }
+                    else if (type === 'stores') {
+                        if (entityName.includes("JOIN")) {
+                            outside.push(`"${linkedName}" -> "${entityName}";`);
+                        } else {
+                            outside.push(`"${entityName}" -> "${linkedName}";`);
+                        }
+
+                        stores.add(linkedName);
+                    }
+                });
+
+                return;
+            }
+
+            match = /\-\-\>\s+(.*)$/.exec(line);
+
+            if (match && entityName) {
+                var targets = match[1];
+                targets.split(',').forEach(name => {
+                    var linkedName = processName(name.trim());
+                    if (linkedName === 'none') return;
+
+                    results.push(`"${entityName}" -> "${linkedName}";`);
+                });
+            }
+        })
+
+        if (results.length) results.push(`}`);
+
+        results = results.concat(outside);
+
+        stores.forEach(node => {
+            results.push(`"${node}" [shape=cylinder];`)
+        });
+
+        topics.forEach(node => {
+            results.push(`"${node}" [shape=rect];`)
+        });
+
+        return `
+	digraph G {
+		label = "Kafka Streams Topology"
+
+		${results.join('\n')}
+	}
+	`;
+    }
+
+    function processName(name) {
+        return name.replace(/-/g, '-\\n');
+    }
+
+    const yyy = `
+digraph G {
+\tlabel = "Kafka Streams Topology"
+
+subgraph cluster_0 {
+\tlabel = "Sub-topology: 0";
+\tstyle=filled;
+\tcolor=lightgrey;
+\tnode [style=filled,color=white];
+"KSTREAM-nSOURCE-n0000000000" -> "KSTREAM-nTRANSFORM-n0000000001";
+"KSTREAM-nTRANSFORM-n0000000001" -> "KSTREAM-nKEY-nSELECT-n0000000002";
+"KSTREAM-nKEY-nSELECT-n0000000002" -> "KSTREAM-nFILTER-n0000000005";
+"KSTREAM-nFILTER-n0000000005" -> "KSTREAM-nSINK-n0000000004";
+}
+subgraph cluster_1 {
+\tlabel = "Sub-topology: 1";
+\tstyle=filled;
+\tcolor=lightgrey;
+\tnode [style=filled,color=white];
+"KSTREAM-nSOURCE-n0000000006" -> "KSTREAM-nAGGREGATE-n0000000003";
+"KSTREAM-nAGGREGATE-n0000000003" -> "KTABLE-nTOSTREAM-n0000000007";
+"KTABLE-nTOSTREAM-n0000000007" -> "KSTREAM-nSINK-n0000000008";
+}
+"conversation-nmeta" -> "KSTREAM-nSOURCE-n0000000000";
+"KSTREAM-nTRANSFORM-n0000000001" -> "conversation-nmeta-nstate";
+"KSTREAM-nSINK-n0000000004" -> "count-nresolved-nrepartition";
+"count-nresolved-nrepartition" -> "KSTREAM-nSOURCE-n0000000006";
+"KSTREAM-nAGGREGATE-n0000000003" -> "count-nresolved";
+"KSTREAM-nSINK-n0000000008" -> "streams-ncount-nresolved";
+"count-nresolved" [shape=cylinder];
+"conversation-nmeta-nstate" [shape=cylinder];
+"streams-ncount-nresolved" [shape=rect];
+"count-nresolved-nrepartition" [shape=rect];
+"conversation-nmeta" [shape=rect];
+}
+    `
+
+    d3.select("#graph")
+        .graphviz()
+        .renderDot(yyy);
+        //.renderDot(convertTopoToDot(x));
+
+    console.log(convertTopoToDot(x));
+
+
+</script>
+</body>
+</html>

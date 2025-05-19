@@ -1,0 +1,239 @@
+
+.parent {
+    display: flex;
+}
+.left {
+    width: 30%;
+    font-size: 260%;
+}
+
+.left #configForm {
+    width: 30%;
+    font-size: 50%;
+}
+
+.right {
+    border-color: #ff3b30;
+    border-style: solid;
+    border-width: 1px;
+    width: 70%;
+    /*background-color: #ff0000;*/
+
+    height: 100%;
+    /*max-width: 90vw;*/
+    /*max-height: 90vh;*/
+    padding: 0; /* Remove padding if you want the SVG to truly fill the dialog */
+
+}
+
+.canvas-container {
+    /*border-color: #0000dd;*/
+    /*border-style: solid;*/
+    /*border-width: 1px;*/
+
+    /*height: 100%;*/
+    height: 900px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.canvas {
+
+    /*border-color: #009578;*/
+    /*border-style: solid;*/
+    /*border-width: 1px;*/
+
+    flex: 1;
+    width: 100%;
+    min-height: 0; /* Important for flex child to shrink properly */
+}
+
+.dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 1200px;
+    height: 400px;
+    background-color: white;
+    border: 1px solid black;
+    /*flex-direction: column;*/
+    overflow: hidden; /* Prevent content overflow */
+    padding: 5px 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transform: none;
+}
+
+.dialog-header {
+    display: flex;
+    justify-content: flex-start; /* Align close button to the left */
+    align-items: center;
+    padding: 10px;
+    background-color: #f3f3f3; /* Soft gray background for header bar */
+    border-bottom: 1px solid #ccc;
+    user-select: none;
+}
+
+.dialog-close-btn {
+    width: 12px;
+    height: 12px;
+    background-color: #ff5f57; /* macOS close button red */
+    border: 1px solid rgba(0, 0, 0, 0.2); /* Subtle border for 3D effect */
+    border-radius: 50%; /* Make it a circle */
+    cursor: pointer;
+    margin-right: auto;
+}
+
+.dialog-close-btn:hover {
+    background-color: #ff3b30; /* Slightly darker red for hover effect */
+}
+
+.dialog-buttons {
+    height: 12px;
+    margin-left: auto;
+}
+
+.dialog-recycle-btn {
+    text-align: center;
+    fill: #0000ff !important;
+    cursor: pointer;
+}
+
+.dialog-recycle-btn path {
+    fill: #ffffff;
+}
+
+.dialog-recycle-btn:hover path {
+    fill: #ff3b30;
+}
+
+.dialog-clear-btn {
+    text-align: center;
+    /*background-color: #0000ff; !* macOS close button red *!*/
+    cursor: pointer;
+}
+
+.dialog-clear-btn path {
+    fill: #ffffff;
+}
+
+.dialog-clear-btn:hover path {
+    fill: #ff3b30;
+}
+
+/* Menu bar for dragging */
+.dialog-header {
+    background-color: #333;
+    color: white;
+    cursor: move; /* Indicate dragability */
+    padding: 8px 15px;
+    font-size: 26px;
+    user-select: none; /* Prevent text selection */
+}
+
+.dialog-handle {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background-color: #ccc;
+    bottom: 0;
+    right: 0;
+    cursor: nwse-resize; /* Diagonal resize cursor for bottom-right handle */
+}
+
+/* Table in the dialog */
+.dialog-content {
+    padding: 2px;
+    overflow: auto;
+    height: calc(100% - 40px); /* Account for the header height */
+}
+
+.scrollable-table {
+    /*height: 400px;*/
+    /*max-height: 100%;*/
+    max-height: calc(100% - 40px); /* Account for the header height */
+
+    /*flex: 1;*/
+    overflow-y: auto;
+}
+
+.ui-table {
+    table-layout: fixed;
+    width: 100%; /* or a specific width in pixels */
+}
+
+/* Set specific widths for columns */
+.ui-table th:nth-child(1),
+.ui-table td:nth-child(1) {
+    width: 20%; /* adjust as needed */
+}
+
+.ui-table th:nth-child(2),
+.ui-table td:nth-child(2) {
+    width: 80%; /* adjust as needed */
+}
+
+
+.ui-table {
+    border-collapse: collapse;
+    width: 100%;
+    border: solid #ccc 1px;
+}
+
+.ui-table th {
+    position: sticky;
+    top: 0;
+    text-align: left;
+}
+
+.table {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 24px;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.table th {
+    position: sticky;
+    top: 0;
+    background-color: #009578;
+    text-align: left;
+}
+
+.table th,
+.table td {
+    padding: 6px 8px;
+    font-weight: normal;
+    white-space: nowrap;
+}
+
+.table tbody tr:nth-of-type(odd) {
+    background-color: #aaa;
+}
+
+.table tbody tr:nth-of-type(even) {
+    background-color: #eee;
+}
+
+
+
+.json-newspaper {
+    column-count: 2 !important;        /* Change this to 1, 2, or 3 as needed */
+    column-gap: 20px !important;
+    white-space: pre-wrap !important;  /* Preserves formatting but allows wrapping */
+    word-break: break-word !important; /* Prevents overflow with long strings */
+    /*font-family: monospace;*/
+    /*font-size: 14px;*/
+    line-height: 1.0 !important;
+}
+
+.xml-newspaper {
+    column-count: 2 !important;        /* Change this to 1, 2, or 3 as needed */
+    column-gap: 20px !important;
+    white-space: pre-wrap !important;  /* Preserves formatting but allows wrapping */
+    word-break: break-word !important; /* Prevents overflow with long strings */
+    /*font-family: monospace;*/
+    /*font-size: 14px;*/
+    line-height: 1.0 !important;
+}

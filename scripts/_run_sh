@@ -1,0 +1,238 @@
+#compdef run.sh
+
+_run_sh() {
+  local curcontext="$curcontext" state line
+  typeset -A opt_args
+  local -a topologies
+  local -a ks101_topologies ks201_topologies ks301_topologies
+
+
+  # Define topologies by category
+  ks101_topologies=(
+    "ks101.FlatMapAndBranch: Using flatMap on the [processes] arguments w/branching"
+    "ks101.AlternateSerde: Showcasing how to use alternate serdes within the flow of the topology"
+    "ks101.StreamToTableJoin: Stream in [process] as a KTable and [windows] as a KStream and join"
+    "ks101.TumblingOrHoppingWindow: Explore time based windowing"
+    "ks101.TimestampPropagation: Shows event timestamp through sub-topologies and how to change it"
+    "ks101.KTableOptimized: KTable Optimized example"
+    "ks101.Immutability: The importance of immutability within the topology"
+  )
+
+  ks201_topologies=(
+    "ks201.EmitOnChange: Emit On Change example"
+    "ks201.PoisonPill: Bad Message Handling"
+    "ks201.TableToTableJoin: Join 2 KTables together"
+    "ks201.TableToTableJoin2: Join 2 KTables together (parent and child)"
+    "ks201.VersionedStore: A use of versioned state store for late arriving data and reprocessing options"
+    "ks201.SlowPunctuate: A Punctuate that runs longer than it should"
+    "ks201.KTableTTL: KTable with Time to Live"
+  )
+
+  ks301_topologies=(
+    "ks301.EmitOnWindowClose: Showcasing Emit Strategy with a session window"
+    "ks301.EmitOnWindowClose2: Showcasing Emit Strategy with a session window and low volume topic"
+    "ks301.KTableTTL2: KTable with Time to Live for shared state store"
+    "ks301.RangeQuery: Leverage PrefixScan for Parent/Child Joins"
+    "ks301.SlidingWindows: Sliding"
+    "ks301.SlidingWindows2: Sliding2"
+    "ks301.MicroBatch: Microbatch..."
+    "ks301.ForeignKeyJoin: ForeignKeyJoin"
+  )
+
+  local -a topologies=( $ks101_topologies $ks201_topologies $ks301_topologies )
+
+
+  # Check if we're completing the first argument (topology)
+  if (( CURRENT == 2 )); then
+
+    # Configure completion style for headings
+    zstyle ':completion:*:descriptions' format '%B%F{blue}%d%f%b'
+
+    # Display grouped topologies with headings
+    _describe -V -t ks101 "KS101 - introductory" ks101_topologies
+    _describe -V -t ks201 "KS201 - intermediate" ks201_topologies
+    _describe -V -t ks301 "KS301 - advanced" ks301_topologies
+
+    return
+  fi
+
+
+
+  # Check if the first argument is a valid topology
+  local is_topology=0
+  local first_arg=${words[2]}
+
+  for topology in ${topologies[@]%%:*}; do
+    if [[ "$first_arg" == "$topology" ]]; then
+      is_topology=1
+      break
+    fi
+  done
+
+  # Only offer options if a valid topology was selected
+  if (( is_topology == 1 )); then
+    # First, check if previous word is an option that needs value completion
+    if (( CURRENT >= 3 )); then
+      local prev=${words[CURRENT-1]}
+      local first_arg=${words[2]}
+
+      case $prev in
+        --num-threads)
+          local -a thread_vals=( "1:Single thread" "2:Two threads" "4:Four threads" "8:Eight threads" )
+          _describe "Thread count" thread_vals
+          return
+          ;;
+        --commit-interval)
+          local -a interval_vals=( "100:Very frequent" "500:Frequent" "1000:Normal" "5000:Infrequent" )
+          _describe "Commit interval (ms)" interval_vals
+          return
+          ;;
+        --optimization)
+          local -a opt_vals=( "none:NO_OPTIMIZATION - no optimizations" "all:OPTIMIZE - all topology optimizations" "reuse.ktable.source.topics:REUSE_KTABLE_SOURCE_TOPICS - reuses source topic as changelog topic for KTables" "merge.repartition.topics:MERGE_REPARTITION_TOPICS - merges duplicated repartition topics" "single.store.self.join:SINGLE_STORE_SELF_JOIN - optimizes inner stream-stream joins into self-joins when both arguments are the same stream" )
+          _describe "Optimization strategy" opt_vals
+          return
+          ;;
+        --emit-strategy)
+          local -a opt_vals=( "ON_WINDOW_UPDATE: on window update" "ON_WINDOW_CLOSE:on window close" )
+          _describe "Emit On Close strategy" opt_vals
+          return
+          ;;
+        --punctuation-type)
+          local -a opt_vals=( "STREAM_TIME:stream-time - only advances when messages arrives" "WALL_CLOCK_TIME:system time - advances independently of messages arriving" )
+          _describe "Punctuation Type" opt_vals
+          return
+          ;;
+        --window-size)
+          local -a opt_vals=( "60s" )
+          _describe "Window Size" opt_vals
+          return
+          ;;
+        --window-grace)
+          local -a opt_vals=( "10s" )
+          _describe "Window Grace" opt_vals
+          return
+          ;;
+        --window-advance)
+          local -a opt_vals=( "30s" )
+          _describe "Window Advance" opt_vals
+          return
+          ;;
+        --retention)
+          local -a opt_vals=( "5m" )
+          _describe "Window Retention" opt_vals
+          return
+          ;;
+      esac
+    fi
+
+    # Define all available options
+    local -a all_opts=(
+      "--num-threads"
+      "--commit-interval"
+      "--optimization"
+      "--punctuation-type"
+      "--caching-disabled"
+      "--disable-feature"
+      "--enable-eos"
+    )
+
+    ## Add topology-specific options
+    #local first_arg=${words[2]}
+    #if [[ "$first_arg" =~ "Sliding" || "$first_arg" =~ "Emit" ]]; then
+    #  all_opts+=(
+    #    "--emit-strategy"
+    #  )
+    #fi
+
+    if [[ "$first_arg" =~ "[Ww]indow|Tumbling" ]]; then
+        all_opts+=(
+          "--window-size"
+          "--window-grace"
+          "--window-advance"
+          "--retention"
+          "--emit-strategy"
+        )
+    fi
+
+    #echo ${all_opts[@]}
+
+    # Track which options have already been used
+    local -a available_opts=()
+
+    # Check which options have been used
+    local -A used_options
+    for ((i=2; i<CURRENT; i++)); do
+      local arg=${words[i]}
+
+      # Check if this is an option (starts with --)
+      if [[ "$arg" == --* ]]; then
+        used_options[$arg]=1
+      fi
+    done
+
+    # Build the available options list (excluding used options)
+    local -a opts=()
+
+    # Check each option to see if it's been used
+    for opt in $all_opts; do
+      if (( ! ${+used_options[$opt]} )); then
+        case $opt in
+          --num-threads)
+            opts+=("$opt: Number of threads for the Kafka Streams application")
+            ;;
+          --commit-interval)
+            opts+=("$opt: Commit interval in milliseconds")
+            ;;
+          --optimization)
+            opts+=("$opt: Optimization strategy")
+            ;;
+          --caching-disabled)
+            opts+=("$opt: Disable state store caching")
+            ;;
+          --disable-feature)
+            opts+=("$opt: Disable logic within this topology (if applicable) for demonstration purposes")
+            ;;
+          --emit-strategy)
+            opts+=("$opt: Window Aggregate Emitting Strategy")
+            ;;
+          --punctuation-type)
+            opts+=("$opt: Punctuation Clock")
+            ;;
+          --window-size)
+            opts+=("$opt: Window Size")
+            ;;
+          --window-grace)
+            opts+=("$opt: Window Grace")
+            ;;
+          --window-advance)
+            opts+=("$opt: Window Advance")
+            ;;
+          --retention)
+            opts+=("$opt: Window Retention")
+            ;;
+          --enable-eos)
+            opts+=("$opt: Processing Guarantee - exactly once v2")
+            ;;
+        esac
+      fi
+    done
+
+    # Enable completing options without requiring a dash prefix
+    # but only the dash versions will be suggested
+    local ret=1
+
+    # Handle completion state based on the current prefix
+    if [[ "${words[CURRENT]}" == -* ]]; then
+      # User started typing a dash, show matching options
+      _describe "Options" opts && ret=0
+    else
+      # User hasn't typed a dash yet, still show all options
+      _describe "Options" opts && ret=0
+    fi
+
+    # If nothing matched, fall back to regular file completion
+    (( ret )) && _files
+  fi
+}
+
+compdef _run_sh run.sh

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bite-Size Streams</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/@hpcc-js/wasm@2.16.2/dist/graphviz.umd.js" type="javascript/worker"></script>
+    <script src="https://unpkg.com/d3-graphviz@5.6.0/build/d3-graphviz.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="parent">
+    <div class="left">
+        <div style="display: inline;">
+            <form id="configForm" style="display: inline; ">
+                <button type="submit">Emit</button>
+                <select id="dropdown" name="dropdown">
+                </select>
+                <input type="number" id="age" name="age" min="0" max="300" value="0"/>
+                <span>w</span><input type="checkbox" id="windowsOnly" name="windowsOnly"/>
+            </form>&nbsp;
+            <input type="number" id="featureValue" min="1" max="60" value="1"/><input type="checkbox" id="featureToggle"/>
+        </div>
+        <div id="response"></div>
+        <br/>
+        <div><span style="color:blue;font-weight: bold;" id="applicationId"></span></div>
+        <div><span style="color:green;font-weight: bold;" id="currentTime">&nbsp;</span></div>
+        <table id="subtopologyTable" class="ui-table">
+            <thead>
+            <tr>
+                <th>&nbsp;</th>
+                <th>event time</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Rows will be dynamically populated here -->
+            </tbody>
+        </table>
+        <table id="commitTable" class="ui-table">
+            <thead>
+            <tr>
+                <th>&nbsp;</th>
+                <th>commit time</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Rows will be dynamically populated here -->
+            </tbody>
+        </table>
+    </div>
+    <div class="right">
+        <div id="graph-container" class="canvas-container">
+            <div id="graph" class="canvas">
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <form id="poisonPill" style="display: inline; ">
+        <button type="submit">Poison Pill</button>
+    </form>&nbsp;
+</div>
+<script src="common.js"></script>
+<script src="topology.js"></script>
+<script src="ws_client.js"></script>
+<script src="ws.js"></script>
+<script src="statestores.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

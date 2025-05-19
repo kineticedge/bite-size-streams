@@ -1,0 +1,12 @@
+[
+  {
+    "targets": [
+      "host.docker.internal:8080"
+    ],
+    "labels": {
+      "source": "micrometer",
+      "cluster_type": "streams",
+      "job": "streams"
+    }
+  }
+]
