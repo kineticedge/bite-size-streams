@@ -117,7 +117,7 @@ public class VersionedStore2 extends BaseTopologyBuilder {
             );
 
     builder.<String, OSWindow>stream(Constants.WINDOWS, Consumed.as("windows-source"))
-            .selectKey((k, v) -> "" + v.owningProcessId())
+            .selectKey((k, v) -> "" + v.processId())
             .repartition()
             .processValues(() -> joiner((window, process) ->
                     String.format("windowId=%s, processName=%s, uptime=%,d", window.windowId(), process.name(), process.upTime())

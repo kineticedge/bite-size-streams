@@ -13,7 +13,8 @@ public interface WindowMapper {
 
   WindowMapper INSTANCE = Mappers.getMapper(WindowMapper.class);
 
-  @Mapping(target = "hostname", expression = "java(MapperHelper.hostname())")
+//  @Mapping(target = "hostname", expression = "java(MapperHelper.hostname())")
+  @Mapping(source = "owningProcessId", target = "processId")
   OSWindow convert(oshi.software.os.OSDesktopWindow osDesktopWindow);
 
   Rectangle toRectangle(java.awt.Rectangle rectangle);

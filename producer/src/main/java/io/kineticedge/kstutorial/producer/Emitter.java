@@ -97,8 +97,8 @@ public class Emitter {
 
     os.getDesktopWindows(true).stream()
             .map(WindowMapper.INSTANCE::convert)
-            .filter(w -> !ignoredWindows.contains(w.command()))
-            .filter(w -> proccessIds.contains(w.owningProcessId()))
+            .filter(w -> !ignoredWindows.contains(w.title())) //TODO was command now title, need to verify ok/good
+            .filter(w -> proccessIds.contains(w.processId()))
             .forEach(w -> producer.publish(Constants.WINDOWS, w, (System.currentTimeMillis() - (age * 1000L))));
 
     if (!windowsOnly) {

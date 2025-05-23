@@ -123,6 +123,10 @@ function ws_updateEventSourceDialog(topic, e) {
 
             if (data.datatype === "JSON") {
                 const jsonObject = JSON.parse(data.value);
+
+                //TODO make sure doesn't break
+                delete jsonObject._type;
+
                 newRow2.innerHTML = `
                         <td colspan="5">
                           <pre class="json-newspaper">${JSON.stringify(jsonObject, null, 2)}</pre>

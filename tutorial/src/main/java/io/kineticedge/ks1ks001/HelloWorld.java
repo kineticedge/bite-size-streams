@@ -49,10 +49,8 @@ public class HelloWorld extends BaseTopologyBuilder {
             .mapValues((k, v) -> {
               return Map.ofEntries(
                       Map.entry("processId", v.processId()),
-                      Map.entry("path", v.path()),
+//                      Map.entry("path", v.path()),
                       Map.entry("arguments", v.arguments()),
-                      Map.entry("cpu", v.processCpuLoadCumulative()),
-                      Map.entry("virtualMemory", v.virtualSize()),
                       Map.entry("threadCount", v.threadCount())
               );
             })

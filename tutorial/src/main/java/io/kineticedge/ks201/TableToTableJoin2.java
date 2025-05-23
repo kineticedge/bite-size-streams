@@ -36,24 +36,42 @@ public class TableToTableJoin2 extends BaseTopologyBuilder {
   protected void build(StreamsBuilder builder) {
 
 
-    KTable<String, OSWindowMap> threads = builder.<String, OSWindow>stream(Constants.WINDOWS, Consumed.as("windows-source"))
-            .selectKey((k, v) -> "" + v.owningProcessId(), Named.as("windows-select-key"))
+      Materialized<String, OSWindowMap, KeyValueStore<Bytes, byte[]>> wMaterialized = Materialized.as("wstore");
+      if (isCachingDisabled()) {
+          wMaterialized.withCachingDisabled();
+      }
+
+      Materialized<String, OSProcess, KeyValueStore<Bytes, byte[]>> pMaterialized = Materialized.as("pstore");
+      if (isCachingDisabled()) {
+          pMaterialized.withCachingDisabled();
+      }
+
+      Materialized<String, String, KeyValueStore<Bytes, byte[]>> joinMaterialized =
+              Materialized.as("jstore");
+      joinMaterialized.withValueSerde(Serdes.String());
+
+      if (isCachingDisabled()) {
+          joinMaterialized.withCachingDisabled();
+      }
+
+      KTable<String, OSWindowMap> threads = builder.<String, OSWindow>stream(Constants.WINDOWS, Consumed.as("windows-source"))
+            .selectKey((k, v) -> "" + v.processId(), Named.as("windows-select-key"))
             .groupByKey()
             .aggregate(OSWindowMap::new,
                     (k, v, a) -> {
                       a.addWindow(v);
                       return a;
                     },
-                    Materialized.as("wstore")
+                    wMaterialized
             );
 
     builder.<String, OSProcess>stream(Constants.PROCESSES, Consumed.as("processes-source"))
-            .toTable(Named.as("processes-toTable"), Materialized.as("pstore"))
+            .toTable(Named.as("processes-toTable"), pMaterialized)
             .join(
                     threads,
                     (p, w) -> "processName=" + p.name() + " | windowIds=" + w.windowIds(),
                     Named.as("__join__"),
-                    Materialized.<String, String, KeyValueStore<Bytes, byte[]>>as("jstore").withValueSerde(Serdes.String())
+                    joinMaterialized
             )
             .toStream(Named.as("toStream"))
             .to(OUTPUT_TOPIC, Produced.<String, String>as("output-to").withValueSerde(Serdes.String()));

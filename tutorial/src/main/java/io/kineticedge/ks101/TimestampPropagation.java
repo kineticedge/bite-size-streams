@@ -34,7 +34,7 @@ public class TimestampPropagation extends BaseTopologyBuilder {
   @Override
   protected void build(StreamsBuilder builder) {
     builder.<String, OSProcess>stream(Constants.PROCESSES, Consumed.as("processes-source"))
-            .selectKey((k, v) -> v.path(), Named.as("select-key-path"))
+            .selectKey((k, v) -> v.name(), Named.as("select-key-path"))
             .repartition()//Repartitioned.as("step-1"))
             .peek(TimestampPropagation::print, Named.as("peek-1"))
             .selectKey((k, v) -> Integer.toString(v.processId()), Named.as("select-key-process-id"))

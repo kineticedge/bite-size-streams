@@ -16,6 +16,7 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.Key;
 import java.util.List;
 
 @SuppressWarnings("unused")
@@ -34,18 +35,33 @@ public class TableToTableJoin extends BaseTopologyBuilder {
   @Override
   protected void build(StreamsBuilder builder) {
 
+    Materialized<String, OSWindow, KeyValueStore<Bytes, byte[]>> wMaterialized = Materialized.as("windows-store");
+    if (isCachingDisabled()) {
+      wMaterialized.withCachingDisabled();
+    }
+
+    Materialized<String, OSProcess, KeyValueStore<Bytes, byte[]>> pMaterialized = Materialized.as("processes-store");
+    if (isCachingDisabled()) {
+      pMaterialized.withCachingDisabled();
+    }
+
+    Materialized<String, String, KeyValueStore<Bytes, byte[]>> joinMaterialized = Materialized.as("join-store");
+    if (isCachingDisabled()) {
+      joinMaterialized.withCachingDisabled();
+    }
+
     // "oops"
     KTable<String, OSWindow> windows = builder.<String, OSWindow>stream(Constants.WINDOWS, Consumed.as("windows-source"))
-            .selectKey((k, v) -> "" + v.owningProcessId(), Named.as("threads-selectKey"))
-            .toTable(Named.as("windows-toTable"), Materialized.as("windows-store"));
+            .selectKey((k, v) -> "" + v.processId(), Named.as("threads-selectKey"))
+            .toTable(Named.as("windows-toTable"), wMaterialized);
 
     builder.<String, OSProcess>stream(Constants.PROCESSES, Consumed.as("processes-source"))
-            .toTable(Named.as("processes-toTable"), Materialized.as("processes-store"))
+            .toTable(Named.as("processes-toTable"), pMaterialized)
             .join(
                     windows,
-                    (p, w) -> "processName=" + p.name() + " | windowId=" + w.windowId() + " | visible=" + w.visible(),
+                    (p, w) -> "processName=" + p.name() + " | windowId=" + w.windowId(),
                     Named.as("__incorrect_join__"),
-                    Materialized.<String, String, KeyValueStore<Bytes, byte[]>>as("join").withValueSerde(Serdes.String())
+                    joinMaterialized
             )
             .toStream(Named.as("toStream"))
             .to(OUTPUT_TOPIC, Produced.<String, String>as("output-to").withValueSerde(Serdes.String()));

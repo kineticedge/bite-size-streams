@@ -65,7 +65,7 @@ public class MicroBatch extends BaseTopologyBuilder {
   protected void build(StreamsBuilder builder) {
 
     final String STORE = "state-store";
-    final int BATCH_SIZE = 3;
+    final int BATCH_SIZE = 5;
 
     builder.<String, OSWindow>stream(Constants.WINDOWS, Consumed.as("windows-stream"))
             .process(new ProcessorSupplier<String, OSWindow, String, List<OSWindow>>() {

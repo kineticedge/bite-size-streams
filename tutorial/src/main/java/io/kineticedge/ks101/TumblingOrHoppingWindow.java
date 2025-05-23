@@ -50,7 +50,7 @@ public class TumblingOrHoppingWindow extends BaseTopologyBuilder {
     builder
             .<String, OSWindow>stream(Constants.WINDOWS, Consumed.as("windows-source"))
             .peek(TumblingOrHoppingWindow::print, Named.as("peek"))
-            .groupBy((k, v) -> "" + v.owningProcessId(), Grouped.as("group-by-owning-process-id"))
+            .groupBy((k, v) -> "" + v.processId(), Grouped.as("group-by-owning-process-id"))
             .windowedBy(TimeWindows
                     .ofSizeAndGrace(size, grace)
                     .advanceBy(advance)

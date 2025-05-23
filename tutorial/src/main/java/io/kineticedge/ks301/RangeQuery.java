@@ -46,7 +46,7 @@ public class RangeQuery extends BaseTopologyBuilder {
             Stores.persistentKeyValueStore(storeName), null,  null);
 
     builder.<String, OSWindow>stream(Constants.WINDOWS)
-            .selectKey((k, v) -> "" + v.owningProcessId())
+            .selectKey((k, v) -> "" + v.processId())
             .repartition()
             .peek(RangeQuery::print)
             .processValues(new FixedKeyProcessorSupplier<String, OSWindow, OSWindow>() {

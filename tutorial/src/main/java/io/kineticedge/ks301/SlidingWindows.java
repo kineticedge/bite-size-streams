@@ -76,7 +76,7 @@ public class SlidingWindows extends BaseTopologyBuilder {
               public void process(Record<Windowed<String>, OSWindowMoves> record) {
                 context().forward(new Record<>(asString(record, context().currentStreamTimeMs()), record.value(), record.timestamp(), record.headers()));
               }
-            }, Named.as("select-key"))
+            })
             .to(OUTPUT_TOPIC, Produced.as("sliding-windows-sink"));
 
   }

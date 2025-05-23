@@ -64,7 +64,7 @@ public class VersionedStore extends BaseTopologyBuilder {
       );
 
     builder.<String, OSWindow>stream(Constants.WINDOWS, Consumed.as("windows-source"))
-            .selectKey((k, v) -> "" + v.owningProcessId(), Named.as("select-key-owning-process-id"))
+            .selectKey((k, v) -> "" + v.processId(), Named.as("select-key-owning-process-id"))
             .repartition(Repartitioned.as("windows-repartition"))
             .processValues((FixedKeyProcessorSupplier<String, OSWindow, String>) () -> new ContextualFixedKeyProcessor<>() {
               public void process(FixedKeyRecord<String, OSWindow> r) {

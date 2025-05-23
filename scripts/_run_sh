@@ -136,13 +136,13 @@ _run_sh() {
       "--enable-eos"
     )
 
-    ## Add topology-specific options
-    #local first_arg=${words[2]}
-    #if [[ "$first_arg" =~ "Sliding" || "$first_arg" =~ "Emit" ]]; then
-    #  all_opts+=(
-    #    "--emit-strategy"
-    #  )
-    #fi
+    # Add topology-specific options
+    local first_arg=${words[2]}
+    if [[ "$first_arg" =~ "Sliding" || "$first_arg" =~ "Emit" ]]; then
+      all_opts+=(
+        "--emit-strategy"
+      )
+    fi
 
     if [[ "$first_arg" =~ "[Ww]indow|Tumbling" ]]; then
         all_opts+=(

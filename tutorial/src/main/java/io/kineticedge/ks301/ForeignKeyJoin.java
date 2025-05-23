@@ -45,7 +45,7 @@ public class ForeignKeyJoin extends BaseTopologyBuilder {
             .toTable(Named.as("windows-toTable"), Materialized.as("windows-store"));
 
     windows.leftJoin(processes,
-                    osWindow -> "" + osWindow.owningProcessId(),
+                    osWindow -> "" + osWindow.processId(),
                     (window, process) -> {
                       OSWindowList windowList = new OSWindowList();
                       windowList.setBatchId(process.parentProcessId() + " : " + process.name());

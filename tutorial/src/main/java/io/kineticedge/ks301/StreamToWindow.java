@@ -44,7 +44,7 @@ public class StreamToWindow extends BaseTopologyBuilder {
 
     stream
             .peek((k, v) -> log.info("key={}, value={}", k, v), Named.as("peek"))
-            .selectKey((k, v) -> v.hostname() + ":" + Integer.toString(v.parentProcessId()), Named.as("selectKey"))
+            .selectKey((k, v) -> Integer.toString(v.parentProcessId()), Named.as("selectKey"))
             .join(
                     latestProcess,
                     (left, right) -> Map.ofEntries(

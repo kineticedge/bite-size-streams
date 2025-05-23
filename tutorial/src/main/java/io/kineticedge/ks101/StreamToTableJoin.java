@@ -54,7 +54,7 @@ public class StreamToTableJoin extends BaseTopologyBuilder {
     builder.<String, OSWindow>stream(
                     Constants.WINDOWS,
                     Consumed.as("windows-source")
-            ).selectKey((k, v) -> "" + v.owningProcessId(), Named.as("windows-selectKey"))
+            ).selectKey((k, v) -> "" + v.processId(), Named.as("windows-selectKey"))
             .join(
                     processes,
                     (window, process) -> "pId=" + process.processId() + ", wI d=" + window.windowId() + " : " + rectangleToString(window.locAndSize()),
