@@ -25,13 +25,42 @@ async function loadTableData(dialog, url) {
             const newRow = document.createElement("tr");
             newRow.innerHTML = `
                 <td> ${data[i].key}</td>
-                <td>${data[i]?.timestamp ? new Date(data[i].timestamp).toISOString() : '<em>n/a</em>'}</td>
+                <td>${data[i]?.timestamp ? formatISODate(new Date(data[i].timestamp).toISOString()) : '<em>n/a</em>'}</td>
                 <td>${data[i].type}</td>
-                <td>
-                  ${JSON.stringify(data[i].value)}
-                </td>
             `;
+
+            const newRow2 = document.createElement("tr");
+
+            newRow2.innerHTML = `
+                    <td colspan="3">
+                      <pre class="json-newspaper">${customJsonStringify(data[i].value, 2)}</pre>
+                    </td>
+                `;
+
+            // if (data.datatype === "JSON") {
+            //     const jsonObject = JSON.parse(data[i].value);
+            //     delete jsonObject._type;
+            //     newRow2.innerHTML = `
+            //             <td colspan="3">
+            //               <pre class="json-newspaper">${customJsonStringify(jsonObject, 2)}</pre>
+            //             </td>
+            //         `;
+            // } else if (data.datatype === "XML") {
+            //     newRow2.innerHTML = `
+            //                 <td colspan="3">
+            //                   <pre class="xml-newspaper">${escapeXML(data[i].value)}</pre>
+            //                 </td>
+            //         `;
+            // } else {
+            //     newRow2.innerHTML = `
+            //                 <td colspan="3">
+            //                   ${data[i].value}
+            //                 </td>
+            //         `;
+            // }
+
             tbody.appendChild(newRow);
+            tbody.appendChild(newRow2);
         }
     } catch (error) {
         console.error("Failed to load data:", error);
@@ -51,7 +80,7 @@ async function updateStateStoreDialog(url) {
                         <th>key</th>
                         <th>timestamp</th>
                         <th>data type</th>
-                        <th>value</th>
+<!--                        <th>value</th>-->
                     </tr>
                 </thead>
                 <tbody class="tbody"></tbody>

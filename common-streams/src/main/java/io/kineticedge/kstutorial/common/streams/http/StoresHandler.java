@@ -177,6 +177,7 @@ public class StoresHandler implements HttpHandler {
                   Map.entry("type", output.getRight())
           );
 
+          //TODO writing this as a string implies all state-stores are strings -- reconsider.
           os.write(JsonUtil.objectMapper().writeValueAsBytes(record));
 
           if (storeIterator.hasNext()) {

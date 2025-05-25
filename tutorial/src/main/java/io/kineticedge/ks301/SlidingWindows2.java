@@ -69,8 +69,8 @@ public class SlidingWindows2 extends BaseTopologyBuilder {
                         return new OSWindowAggregate(0, 0, 1, window);
                       } else {
                         return new OSWindowAggregate(
-                                window.locAndSize().x() - aggregate.window().locAndSize().x(),
-                                window.locAndSize().y() - aggregate.window().locAndSize().y(),
+                                window.x() - aggregate.window().x(),
+                                window.y() - aggregate.window().y(),
                                 aggregate.revision() + 1,
                                 window);
                       }

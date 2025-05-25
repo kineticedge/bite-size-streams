@@ -33,10 +33,10 @@ public class FlatMapAndBranch extends BaseTopologyBuilder {
   @Override
   protected void build(StreamsBuilder builder) {
     builder.<String, OSProcess>stream(Constants.PROCESSES, Consumed.as("processes-source"))
-            .flatMapValues((k, v) -> v.arguments(), Named.as("flatMapValues"))
+            .flatMapValues((k, v) -> List.of(v.name().split(" ")), Named.as("flatMapValues"))
             .peek(FlatMapAndBranch::print, Named.as("peek"))
             .split(Named.as("split"))
-            .branch((k, v) -> v.startsWith("-"), Branched.withConsumer(c -> {
+            .branch((k, v) -> v.contains("."), Branched.withConsumer(c -> {
               c.to(OUTPUT_TOPIC_SWITCHES,
                       Produced.<String, String>as(OUTPUT_TOPIC_SWITCHES + "-sink")
                               .withValueSerde(Serdes.String()));

@@ -45,7 +45,7 @@ public class TableToTableJoin extends BaseTopologyBuilder {
       pMaterialized.withCachingDisabled();
     }
 
-    Materialized<String, String, KeyValueStore<Bytes, byte[]>> joinMaterialized = Materialized.as("join-store");
+    Materialized<String, String, KeyValueStore<Bytes, byte[]>> joinMaterialized = Materialized.<String, String, KeyValueStore<Bytes, byte[]>>as("join-store").withValueSerde(Serdes.String());
     if (isCachingDisabled()) {
       joinMaterialized.withCachingDisabled();
     }

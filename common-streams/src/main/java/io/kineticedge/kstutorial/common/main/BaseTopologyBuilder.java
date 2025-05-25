@@ -6,6 +6,7 @@ import io.kineticedge.kstutorial.common.serde.JsonSerde;
 import io.kineticedge.kstutorial.common.streams.SimpleProcessingExceptionHandler;
 import io.kineticedge.kstutorial.common.streams.ThrottlingDeserializationExceptionHandler;
 import io.kineticedge.kstutorial.domain.Id;
+import io.kineticedge.kstutorial.domain.OSWindow;
 import io.kineticedge.kstutorial.domain.Rectangle;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -175,6 +176,10 @@ public abstract class BaseTopologyBuilder implements TopologyBuilder {
 
   protected static String rectangleToString(Rectangle rectangle) {
     return String.format("pos=(%d,%d) dimensions=%dx%d", rectangle.x(), rectangle.y(), rectangle.width(), rectangle.height());
-
   }
+
+  protected static String rectangleToString(OSWindow window) {
+    return String.format("pos=(%d,%d) dimensions=%dx%d", window.x(), window.y(), window.width(), window.height());
+  }
+
 }

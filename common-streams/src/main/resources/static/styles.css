@@ -50,7 +50,7 @@
 }
 
 .dialog {
-    position: fixed;
+    position: absolute;
     top: 50%;
     left: 50%;
     width: 800px;
@@ -60,10 +60,40 @@
     /*flex-direction: column;*/
     overflow: hidden; /* Prevent content overflow */
     padding: 5px 5px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /*box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);*/
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     transform: none;
 }
+
+/*.dialog {*/
+/*    position: absolute;*/
+/*    min-width: 300px;*/
+/*    min-height: 150px;*/
+/*    background-color: #ffffff;*/
+/*    border: 1px solid #cccccc;*/
+/*    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    overflow: hidden;*/
+/*}*/
+
+.dialog-corner {
+    position: absolute;
+    z-index: 10;
+    background-color: transparent;
+}
+
+.dialog-corner {
+    background-color: rgba(255, 0, 0, 0.2);
+}
+
+.dialog-n, .dialog-s, dialog-e, dialog-w {
+    z-index: 9;
+}
+
+
+
 
 .dialog-header {
     display: flex;
@@ -219,8 +249,8 @@
 
 
 .json-newspaper {
-    column-count: 2 !important;        /* Change this to 1, 2, or 3 as needed */
-    column-gap: 20px !important;
+    /*column-count: 2 !important;        !* Change this to 1, 2, or 3 as needed *!*/
+    /*column-gap: 20px !important;*/
     white-space: pre-wrap !important;  /* Preserves formatting but allows wrapping */
     word-break: break-word !important; /* Prevents overflow with long strings */
     /*font-family: monospace;*/
@@ -229,8 +259,8 @@
 }
 
 .xml-newspaper {
-    column-count: 2 !important;        /* Change this to 1, 2, or 3 as needed */
-    column-gap: 20px !important;
+    /*column-count: 2 !important;        !* Change this to 1, 2, or 3 as needed *!*/
+    /*column-gap: 20px !important;*/
     white-space: pre-wrap !important;  /* Preserves formatting but allows wrapping */
     word-break: break-word !important; /* Prevents overflow with long strings */
     /*font-family: monospace;*/

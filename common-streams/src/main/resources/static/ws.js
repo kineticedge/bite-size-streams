@@ -116,7 +116,7 @@ function ws_updateEventSourceDialog(topic, e) {
                     <td>${data.key}</td>
                     <td>${data.partition}</td>
                     <td>${data.offset}</td>
-                    <td>${new Date(data.timestamp).toISOString()}</td>
+                    <td>${formatISODate(new Date(data.timestamp).toISOString())}</td>
                     <td>${data.type}</td>
                 `;
             const newRow2 = document.createElement("tr");
@@ -129,7 +129,7 @@ function ws_updateEventSourceDialog(topic, e) {
 
                 newRow2.innerHTML = `
                         <td colspan="5">
-                          <pre class="json-newspaper">${JSON.stringify(jsonObject, null, 2)}</pre>
+                          <pre class="json-newspaper">${customJsonStringify(jsonObject, 2)}</pre>
                         </td>
                     `;
             } else if (data.datatype === "XML") {

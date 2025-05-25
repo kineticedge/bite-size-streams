@@ -52,8 +52,8 @@ public class EmitOnChange extends BaseTopologyBuilder {
                         return new OSWindowAggregate(0 /*change_in_x*/, 0 /*change_in_y*/, 1 /*revision*/, window);
                       } else {
                         return new OSWindowAggregate(
-                                window.locAndSize().x() - aggregate.window().locAndSize().x(),
-                                window.locAndSize().y() - aggregate.window().locAndSize().y(),
+                                window.x() - aggregate.window().x(),
+                                window.y() - aggregate.window().y(),
                                 aggregate.revision() + 1,
                                 window);
                       }

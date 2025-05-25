@@ -51,7 +51,7 @@ form.addEventListener('submit', async (event) => {
         mode: 'normal',
         process: formData.get('dropdown'),
         age: formData.get('age'),
-        windowsOnly: formData.get('windowsOnly')
+        types: formData.get('types')
     };
     try {
         // Send the form data to the server using fetch()

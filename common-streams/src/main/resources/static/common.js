@@ -4,13 +4,84 @@
 let zIndexCounter = 1000
 
 
-function makeDialogDraggable(dialog, header) {
+// function makeDialogDraggable(dialog, header) {
+//
+//     let offsetX = 0, offsetY = 0;
+//
+//     header.addEventListener("mousedown", (event) => {
+//         event.preventDefault();
+//         dialog.style.zIndex = (zIndexCounter++).toString();
+//         offsetX = event.clientX - dialog.getBoundingClientRect().left;
+//         offsetY = event.clientY - dialog.getBoundingClientRect().top;
+//         document.addEventListener("mousemove", onMouseMove);
+//         document.addEventListener("mouseup", onMouseUp);
+//     });
+//
+//     function onMouseMove(event) {
+//         event.preventDefault();
+//         dialog.style.left = `${event.clientX - offsetX}px`;
+//         dialog.style.top = `${event.clientY - offsetY}px`;
+//     }
+//
+//     function onMouseUp(event) {
+//         event.preventDefault();
+//         document.removeEventListener("mousemove", onMouseMove);
+//         document.removeEventListener("mouseup", onMouseUp);
+//     }
+// }
+//
+// function makeDialogResizable(dialog, handle) {
+//
+//     let startWidth, startHeight, startX, startY;
+//
+//     handle.addEventListener('mousedown', (event) => {
+//         event.preventDefault();
+//
+//         const rect = dialog.getBoundingClientRect();
+//         startWidth = rect.width;
+//         startHeight = rect.height;
+//         startX = event.clientX;
+//         startY = event.clientY;
+//
+//         document.addEventListener('mousemove', onMouseMove);
+//         document.addEventListener('mouseup', onMouseUp);
+//     });
+//
+//     function onMouseMove(event) {
+//         event.preventDefault();
+//         dialog.style.width = `${startWidth + (event.clientX - startX)}px`;
+//         dialog.style.height = `${startHeight + (event.clientY - startY)}px`;
+//     }
+//
+//     function onMouseUp(event) {
+//         event.preventDefault();
+//         document.removeEventListener('mousemove', onMouseMove);
+//         document.removeEventListener('mouseup', onMouseUp);
+//     }
+// }
 
+function makeDialogDraggable(dialog) {
+    // Make the entire dialog draggable (not just the header)
     let offsetX = 0, offsetY = 0;
+    let isDragging = false;
 
-    header.addEventListener("mousedown", (event) => {
-        event.preventDefault();
+    // Raise dialog on any click
+    dialog.addEventListener("mousedown", (event) => {
+        // Raise dialog z-index on any click
         dialog.style.zIndex = (zIndexCounter++).toString();
+
+        // Skip dragging behavior if the target is a button or handle
+        const target = event.target;
+        if (target.closest('.dialog-close-btn') ||
+            target.closest('.dialog-clear-btn') ||
+            target.closest('.dialog-recycle-btn') ||
+            target.closest('.dialog-handle') ||
+            target.closest('.dialog-corner')) {
+            return;
+        }
+
+        event.preventDefault();
+        isDragging = true;
         offsetX = event.clientX - dialog.getBoundingClientRect().left;
         offsetY = event.clientY - dialog.getBoundingClientRect().top;
         document.addEventListener("mousemove", onMouseMove);
@@ -18,46 +89,148 @@ function makeDialogDraggable(dialog, header) {
     });
 
     function onMouseMove(event) {
+        if (!isDragging) return;
         event.preventDefault();
         dialog.style.left = `${event.clientX - offsetX}px`;
         dialog.style.top = `${event.clientY - offsetY}px`;
     }
 
-    function onMouseUp(event) {
-        event.preventDefault();
+    function onMouseUp() {
+        isDragging = false;
         document.removeEventListener("mousemove", onMouseMove);
         document.removeEventListener("mouseup", onMouseUp);
     }
 }
 
-function makeDialogResizable(dialog, handle) {
+function makeDialogResizable(dialog) {
+    // Add resize handles to all corners and edges
+    const positions = ['n', 's', 'e', 'w', 'ne', 'se', 'sw', 'nw'];
 
-    let startWidth, startHeight, startX, startY;
+    // First remove the existing handle if present
+    const existingHandle = dialog.querySelector('.dialog-handle');
+    if (existingHandle) {
+        existingHandle.remove();
+    }
 
-    handle.addEventListener('mousedown', (event) => {
-        event.preventDefault();
+    // Create corner elements
+    positions.forEach(pos => {
+        const handle = document.createElement('div');
+        handle.className = `dialog-corner dialog-${pos}`;
+        handle.style.position = 'absolute';
 
-        const rect = dialog.getBoundingClientRect();
-        startWidth = rect.width;
-        startHeight = rect.height;
-        startX = event.clientX;
-        startY = event.clientY;
+        // Set position and appearance based on the corner/edge
+        switch(pos) {
+            case 'n':
+                handle.style.top = '-5px';
+                handle.style.left = '0';
+                handle.style.width = '100%';
+                handle.style.height = '10px';
+                handle.style.cursor = 'n-resize';
+                break;
+            case 'ne':
+                handle.style.top = '-5px';
+                handle.style.right = '-5px';
+                handle.style.width = '10px';
+                handle.style.height = '10px';
+                handle.style.cursor = 'ne-resize';
+                break;
+            case 'e':
+                handle.style.top = '0';
+                handle.style.right = '-5px';
+                handle.style.width = '10px';
+                handle.style.height = '100%';
+                handle.style.cursor = 'e-resize';
+                break;
+            case 'se':
+                handle.style.bottom = '-5px';
+                handle.style.right = '-5px';
+                handle.style.width = '10px';
+                handle.style.height = '10px';
+                handle.style.cursor = 'se-resize';
+                break;
+            case 's':
+                handle.style.bottom = '-5px';
+                handle.style.left = '0';
+                handle.style.width = '100%';
+                handle.style.height = '10px';
+                handle.style.cursor = 's-resize';
+                break;
+            case 'sw':
+                handle.style.bottom = '-5px';
+                handle.style.left = '-5px';
+                handle.style.width = '10px';
+                handle.style.height = '10px';
+                handle.style.cursor = 'sw-resize';
+                break;
+            case 'w':
+                handle.style.top = '0';
+                handle.style.left = '-5px';
+                handle.style.width = '10px';
+                handle.style.height = '100%';
+                handle.style.cursor = 'w-resize';
+                break;
+            case 'nw':
+                handle.style.top = '-5px';
+                handle.style.left = '-5px';
+                handle.style.width = '10px';
+                handle.style.height = '10px';
+                handle.style.cursor = 'nw-resize';
+                break;
+        }
 
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+        dialog.appendChild(handle);
+
+        // Add resize functionality to each handle
+        let startWidth, startHeight, startX, startY, startLeft, startTop;
+
+        handle.addEventListener('mousedown', (event) => {
+            event.preventDefault();
+            event.stopPropagation(); // Prevent dialog dragging
+
+            // Raise dialog z-index on resize attempt too
+            dialog.style.zIndex = (zIndexCounter++).toString();
+
+            const rect = dialog.getBoundingClientRect();
+            startWidth = rect.width;
+            startHeight = rect.height;
+            startLeft = rect.left;
+            startTop = rect.top;
+            startX = event.clientX;
+            startY = event.clientY;
+
+            document.addEventListener('mousemove', handleResize);
+            document.addEventListener('mouseup', stopResize);
+        });
+
+        function handleResize(event) {
+            event.preventDefault();
+
+            // Calculate position deltas
+            const dx = event.clientX - startX;
+            const dy = event.clientY - startY;
+
+            // Apply resizing based on the handle position
+            if (pos.includes('e')) {
+                dialog.style.width = `${startWidth + dx}px`;
+            }
+            if (pos.includes('s')) {
+                dialog.style.height = `${startHeight + dy}px`;
+            }
+            if (pos.includes('w')) {
+                dialog.style.width = `${startWidth - dx}px`;
+                dialog.style.left = `${startLeft + dx}px`;
+            }
+            if (pos.includes('n')) {
+                dialog.style.height = `${startHeight - dy}px`;
+                dialog.style.top = `${startTop + dy}px`;
+            }
+        }
+
+        function stopResize() {
+            document.removeEventListener('mousemove', handleResize);
+            document.removeEventListener('mouseup', stopResize);
+        }
     });
-
-    function onMouseMove(event) {
-        event.preventDefault();
-        dialog.style.width = `${startWidth + (event.clientX - startX)}px`;
-        dialog.style.height = `${startHeight + (event.clientY - startY)}px`;
-    }
-
-    function onMouseUp(event) {
-        event.preventDefault();
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-    }
 }
 
 function formatEpochToTime(epochMillis) {
@@ -125,4 +298,17 @@ function formatXML(xmlString) {
 function calculateTimeSinceLastCommit(lastCommitTime) {
     const now = new Date().getTime(); // Current time in milliseconds
     return Math.floor((now - lastCommitTime) / 100) / 10; // Return difference in seconds
+}
+
+// remove year to save space, also remove "Z" suffix
+function formatISODate(isoString) {
+    return isoString.replace(/Z$/, '').replace(/^\d{4}-/, '');
+}
+
+function customJsonStringify(obj, spaces = 2) {
+    // First, stringify the object normally
+    let jsonStr = JSON.stringify(obj, null, spaces);
+
+    // Then replace arrays containing only 2 numbers with a compact format
+    return jsonStr.replace(/\[\s*(\d+),\s*(\d+)\s*\]/g, '[$1,$2]');
 }

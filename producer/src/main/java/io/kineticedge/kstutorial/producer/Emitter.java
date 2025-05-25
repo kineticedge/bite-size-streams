@@ -2,6 +2,7 @@ package io.kineticedge.kstutorial.producer;
 
 import io.kineticedge.kstutorial.common.Constants;
 import io.kineticedge.kstutorial.domain.Id;
+import io.kineticedge.kstutorial.producer.collector.MapperHelper;
 import io.kineticedge.kstutorial.producer.collector.ProcessMapper;
 import io.kineticedge.kstutorial.producer.collector.ServiceMapper;
 import io.kineticedge.kstutorial.producer.collector.ThreadMapper;
@@ -33,7 +34,8 @@ public class Emitter {
   // how many seconds "old" the message is made.
   private int age = 0;
 
-  private Boolean windowsOnly = false;
+  //private Boolean windowsOnly = false;
+  private String types;
 
   public Emitter(Options options) {
     producer = new Producer(options);
@@ -67,10 +69,11 @@ public class Emitter {
     }
   }
 
-  public void emit(int parent, int age, Boolean windowsOnly) {
+  public void emit(int parent, int age, String types) {
     this.parent = parent;
     this.age = age;
-    this.windowsOnly = windowsOnly;
+    //this.windowsOnly = windowsOnly;
+    this.types = types;
     emit();
   }
 
@@ -79,6 +82,8 @@ public class Emitter {
 
     long start = System.currentTimeMillis();
 
+    // track IDs of emission to keep track of what events get joined.
+    MapperHelper.incrementIteration();
 
     final Set<Long> proccessIds = Stream.concat(
                     (parent != 1 ? Optional.of(os.getProcess(parent)) : Optional.<OSProcess>empty()).stream(),
@@ -86,7 +91,7 @@ public class Emitter {
             )
             .map(ProcessMapper.INSTANCE::convert)
             .peek(p -> {
-              if (!windowsOnly()) {
+              if (includeProcesses()) {
                 producer.publish(Constants.PROCESSES, p, (System.currentTimeMillis() - (age * 1000L)));
               }
             })
@@ -95,18 +100,21 @@ public class Emitter {
 
     log.debug("process Ids: {}", proccessIds);
 
-    os.getDesktopWindows(true).stream()
-            .map(WindowMapper.INSTANCE::convert)
-            .filter(w -> !ignoredWindows.contains(w.title())) //TODO was command now title, need to verify ok/good
-            .filter(w -> proccessIds.contains(w.processId()))
-            .forEach(w -> producer.publish(Constants.WINDOWS, w, (System.currentTimeMillis() - (age * 1000L))));
-
-    if (!windowsOnly) {
-      os.getServices().stream()
-              .map(ServiceMapper.INSTANCE::convert)
-              .filter(s -> proccessIds.contains((long) s.processId()))
-              .forEach(p -> producer.publish(Constants.SERVICES, p, (System.currentTimeMillis() - (age * 1000L))));
+    if (includeWindows()) {
+      os.getDesktopWindows(true).stream()
+              .map(WindowMapper.INSTANCE::convert)
+              .filter(w -> !ignoredWindows.contains(w.title())) //TODO was command now title, need to verify ok/good
+              .filter(w -> proccessIds.contains(w.processId()))
+              .forEach(w -> producer.publish(Constants.WINDOWS, w, (System.currentTimeMillis() - (age * 1000L))));
     }
+
+//    if (!windowsOnly) {
+//      os.getServices().stream()
+//              .map(ServiceMapper.INSTANCE::convert)
+//              .filter(s -> proccessIds.contains((long) s.processId()))
+//              .forEach(p -> producer.publish(Constants.SERVICES, p, (System.currentTimeMillis() - (age * 1000L))));
+//    }
+
 //    if (parent != 1) {
 //      final long threadStartTime = System.currentTimeMillis();
 //      os.getProcesses().stream()
@@ -123,8 +131,16 @@ public class Emitter {
     log.info("all events - duration {}ms", System.currentTimeMillis() - start);
   }
 
-  private boolean windowsOnly() {
-    return windowsOnly != null && windowsOnly;
+//  private boolean windowsOnly() {
+//    return windowsOnly != null && windowsOnly;
+//  }
+
+  private boolean includeProcesses() {
+    return types == null || "all".equals(types) || "processes".equals(types);
+  }
+
+  private boolean includeWindows() {
+    return types == null || "all".equals(types) || "windows".equals(types);
   }
 
 }

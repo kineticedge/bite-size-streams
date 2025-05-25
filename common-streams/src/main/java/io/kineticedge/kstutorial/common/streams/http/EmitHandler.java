@@ -23,7 +23,8 @@ public class EmitHandler implements HttpHandler {
 
   private String process = "1";
   private Integer age = 0;
-  private Boolean windowsOnly = Boolean.FALSE;
+  //private Boolean windowsOnly = Boolean.FALSE;
+  private String types = "all";
 
   public EmitHandler(Emitter emitter) {
     this.emitter = emitter;
@@ -45,10 +46,11 @@ public class EmitHandler implements HttpHandler {
       } else {
         log.info("EmitHandler.handle() -- formData={}, mode={}", formData, mode);
         process = (String) formData.get("process");
+        types = (String) formData.get("types");
         age = Integer.parseInt((String) formData.get("age"));
-        windowsOnly = "on".equals(formData.get("windowsOnly"));
-        log.info("Emitting process: {}, age={}, windowsOnly={}", process, age, windowsOnly);
-        emitter.emit(Integer.parseInt(process), age, windowsOnly);
+        //windowsOnly = "on".equals(formData.get("windowsOnly"));
+        log.info("Emitting process: {}, age={}, types={}", process, age, types);
+        emitter.emit(Integer.parseInt(process), age, types);
       }
 
       exchange.getResponseHeaders().set("Content-Type", "application/json");

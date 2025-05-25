@@ -69,16 +69,16 @@ public class OSWindowMoves {
 
 
     if (lastX == Integer.MIN_VALUE || lastY == Integer.MIN_VALUE) {
-      lastX = window.locAndSize().x();
-      lastY = window.locAndSize().y();
+      lastX = window.pos()[0];
+      lastY = window.pos()[1];
       positions.add("(" + lastX + "," + lastY + ")");
       count = 0;
       return;
     }
 
-    if (lastX != window.locAndSize().x() || lastY != window.locAndSize().y()) {
-      lastX = window.locAndSize().x();
-      lastY = window.locAndSize().y();
+    if (lastX != window.pos()[0] || lastY != window.pos()[1]) {
+      lastX = window.pos()[0];
+      lastY = window.pos()[1];
       positions.add("(" + lastX + "," + lastY + ")");
       count++;
     }
