@@ -7,8 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public record OSProcess(
         int processId,
         String name,
-        String user,
-        String state,
+        //String user,
         int parentProcessId,
         int threadCount,
         long startTime,
@@ -26,8 +25,7 @@ public record OSProcess(
     return new OSProcess(
             key,
             null,
-            null,
-            null,
+            //null,
             0,
             0,
             0L,

@@ -44,7 +44,7 @@ public abstract class BaseTopologyBuilder implements TopologyBuilder {
           Map.entry(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class.getName()),
           Map.entry(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, JsonSerde.class.getName()),
           Map.entry(StreamsConfig.METRICS_RECORDING_LEVEL_CONFIG, "DEBUG"),
-          Map.entry(StreamsConfig.NUM_STREAM_THREADS_CONFIG, 2),
+          Map.entry(StreamsConfig.NUM_STREAM_THREADS_CONFIG, 1),
           Map.entry(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 5_000L),
           Map.entry(StreamsConfig.LOG_SUMMARY_INTERVAL_MS_CONFIG, 15_000L),
           Map.entry(StreamsConfig.DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, ThrottlingDeserializationExceptionHandler.class),

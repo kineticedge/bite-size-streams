@@ -24,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 49,
+  "id": 29,
   "links": [],
   "panels": [
     {
@@ -84,12 +84,12 @@
               }
             ]
           },
-          "unit": "wps"
+          "unit": "ops"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 25,
         "w": 24,
         "x": 0,
         "y": 0
@@ -104,7 +104,9 @@
           ],
           "displayMode": "table",
           "placement": "right",
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Last *",
+          "sortDesc": true
         },
         "tooltip": {
           "hideZeros": false,
@@ -121,471 +123,17 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sort (sum without(task_id,thread_id,instance) (kafka_stream_state_put_rate{thread_id=~\"$thread\", instance=~\"$instance\", job=~\"$job\", store_type=~\"$store_type\", state_id=~\"$state\"}))",
+          "expr": "sort (sum by(__name__, op, state_id) (label_replace({__name__=~\"kafka_stream_.+_rate\", __name__!~\"kafka_stream_state_(bytes_read|memtable_bytes_flushed|bytes_read_compaction|bytes_written_compaction|bytes_written)_rate\", thread_id=~\"$thread\", instance=~\"$instance\", job=~\"$job\", store_type=~\"$store_type\", state_id=~\"$state\"}, \"op\", \"${1}\", \"__name__\", \"kafka_stream_state_(.+)_rate\") > 0))",
           "format": "time_series",
           "hide": false,
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{state_id}}",
+          "legendFormat": "{{state_id}}|{{op}}",
           "refId": "A"
         }
       ],
       "title": "put-rate",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "rps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 8
-      },
-      "id": 42,
-      "interval": "2s",
-      "options": {
-        "legend": {
-          "calcs": [
-            "max",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "sort (sum without(task_id,thread_id,instance) (kafka_stream_state_fetch_rate{thread_id=~\"$thread\", instance=~\"$instance\", job=~\"$job\", store_type=~\"$store_type\", state_id=~\"$state\"}))",
-          "format": "time_series",
-          "hide": false,
-          "instant": false,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "{{state_id}}",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P1809F7CD0C75ACF3"
-          },
-          "editorMode": "code",
-          "expr": "sort (sum without(task_id,thread_id,instance) (kafka_stream_state_get_rate{thread_id=~\"$thread\", instance=~\"$instance\", job=~\"$job\", store_type=~\"$store_type\", state_id=~\"$state\"}))",
-          "hide": false,
-          "instant": false,
-          "legendFormat": "{{state_id}}",
-          "range": true,
-          "refId": "B"
-        }
-      ],
-      "title": "get|fetch-rate",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "wps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 16
-      },
-      "id": 48,
-      "interval": "2s",
-      "options": {
-        "legend": {
-          "calcs": [
-            "max",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "sort (sum without(task_id,thread_id,instance) (kafka_stream_state_all_rate{thread_id=~\"$thread\", instance=~\"$instance\", job=~\"$job\", store_type=~\"$store_type\", state_id=~\"$state\"}))",
-          "format": "time_series",
-          "hide": false,
-          "instant": false,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "{{state_id}}",
-          "refId": "A"
-        }
-      ],
-      "title": "all-rate",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "wps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 24
-      },
-      "id": 44,
-      "interval": "2s",
-      "options": {
-        "legend": {
-          "calcs": [
-            "max",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "sort (sum without(task_id, thread_id,instance) (kafka_stream_state_remove_rate{thread_id=~\"$thread\", instance=~\"$instance\", job=~\"$job\", store_type=~\"$store_type\", state_id=~\"$state\"}) > 0)",
-          "format": "time_series",
-          "hide": false,
-          "instant": false,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "{{state_id}}",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P1809F7CD0C75ACF3"
-          },
-          "editorMode": "code",
-          "expr": "sort (sum without(task_id, thread_id,instance) (kafka_stream_state_delete_rate{thread_id=~\"$thread\", instance=~\"$instance\", job=~\"$job\", store_type=~\"$store_type\", state_id=~\"$state\"}) > 0)",
-          "hide": false,
-          "instant": false,
-          "legendFormat": "{{state_id}}",
-          "range": true,
-          "refId": "B"
-        }
-      ],
-      "title": "remove|delete-rate",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "rps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 31
-      },
-      "id": 47,
-      "interval": "2s",
-      "options": {
-        "legend": {
-          "calcs": [
-            "max",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "sort (sum without(task_id, thread_id,instance) (kafka_stream_state_restore_rate{thread_id=~\"$thread\", instance=~\"$instance\", job=~\"$job\", store_type=~\"$store_type\", state_id=~\"$state\"}))",
-          "format": "time_series",
-          "hide": false,
-          "instant": false,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "{{state_id}}",
-          "refId": "A"
-        }
-      ],
-      "title": "restore-rate",
       "type": "timeseries"
     },
     {
@@ -647,10 +195,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 13,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 25
       },
       "id": 46,
       "interval": "2s",
@@ -864,6 +412,6 @@
   "timezone": "",
   "title": "08 - StateStore (put/fetch)",
   "uid": "streams_statestore_putfetch",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }

@@ -87,7 +87,7 @@ function ws_updateEventSourceDialog(topic, e) {
     dialog.querySelector(".scrollable-table").innerHTML = `
                 <table class="table" style="width: 100%; border-collapse: collapse;">
                     <thead>
-                        <tr>
+                        <tr class="sticky-header">
                             <th>key</th>
                             <th>partition</th>
                             <th>offset</th>
@@ -122,7 +122,12 @@ function ws_updateEventSourceDialog(topic, e) {
             const newRow2 = document.createElement("tr");
 
             if (data.datatype === "JSON") {
+
                 const jsonObject = JSON.parse(data.value);
+
+                const keys = Object
+                    .keys(jsonObject)
+                    .filter(key => key !== '_type' && key !== 'iteration' && key !== 'ts');
 
                 //TODO make sure doesn't break
                 delete jsonObject._type;
@@ -132,6 +137,32 @@ function ws_updateEventSourceDialog(topic, e) {
                           <pre class="json-newspaper">${customJsonStringify(jsonObject, 2)}</pre>
                         </td>
                     `;
+
+                // const headersHTML = keys.map(key => `<th>${key}</th>`).join('');
+                // const valuesHTML = keys.map(key => {
+                //     const value = jsonObject[key];
+                //     if (value === null) {
+                //         return `<td><em>null</em></td>`;
+                //     } else if (typeof value === 'object') {
+                //         return `<td>${customJsonStringify(value, 2)}</td>`;
+                //     } else {
+                //         return `<td>${value}</td>`;
+                //     }
+                // }).join('');
+                //
+                // newRow2.innerHTML = `
+                //     <td colspan="5">
+                //         <table class="json-table">
+                //             <thead>
+                //                 <tr>${headersHTML}</tr>
+                //             </thead>
+                //             <tbody>
+                //                 <tr>${valuesHTML}</tr>
+                //             </tbody>
+                //         </table>
+                //     </td>
+                // `;
+
             } else if (data.datatype === "XML") {
                 newRow2.innerHTML = `
                             <td colspan="5">
@@ -157,8 +188,20 @@ function ws_updateEventSourceDialog(topic, e) {
                 tbody.deleteRow(0);
             }
 
-            const tc = document.querySelector('.scrollable-table');
-            tc.scrollTop = tc.scrollHeight;
+            const tc = dialog.querySelector('.scrollable-table');
+           tc.scrollTop = tc.scrollHeight;
+
+            // // Create scroll tracker for this dialog
+            // dialog.scrollTracker = createScrollTracker(tc);
+            //
+            // // Add a method to the dialog to scroll to bottom when needed
+            // dialog.scrollToBottom = () => {
+            //     scrollToBottom(tc);
+            // };
+            //
+            // // Always scroll to bottom initially
+            // setTimeout(() => dialog.scrollToBottom(), 0);
+
         }
     })
 

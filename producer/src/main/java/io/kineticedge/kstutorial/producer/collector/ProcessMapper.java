@@ -15,7 +15,7 @@ public interface ProcessMapper {
 
   @Mapping(source = "processID", target = "processId")
   @Mapping(source = "parentProcessID", target = "parentProcessId")
-  @Mapping(source = "state", target = "state", qualifiedByName = "stateToString")
+//  @Mapping(source = "state", target = "state", qualifiedByName = "stateToString")
   @Mapping(target = "iteration", expression = "java(MapperHelper.iteration())")
   @Mapping(target = "ts", expression = "java(MapperHelper.ts())")
   OSProcess convert(oshi.software.os.OSProcess osProcess);

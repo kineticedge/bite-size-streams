@@ -312,3 +312,55 @@ function customJsonStringify(obj, spaces = 2) {
     // Then replace arrays containing only 2 numbers with a compact format
     return jsonStr.replace(/\[\s*(\d+),\s*(\d+)\s*\]/g, '[$1,$2]');
 }
+
+
+/**
+ * Scrolls a container to the bottom
+ * @param {HTMLElement} container - The container element to scroll
+ * @param {boolean} [smooth=false] - Whether to use smooth scrolling
+ */
+function scrollToBottom(container, smooth = false) {
+    // Check if container exists
+    if (!container) return;
+
+    // Scroll to bottom
+    if (smooth) {
+        container.scrollTo({
+            top: container.scrollHeight,
+            behavior: 'smooth'
+        });
+    } else {
+        container.scrollTop = container.scrollHeight;
+    }
+}
+
+/**
+ * Creates a function that maintains scroll position relative to the bottom
+ * @param {HTMLElement} container - The scrollable container
+ * @returns {Function} A function to call before adding content
+ */
+function createScrollTracker(container) {
+    let shouldScrollToBottom = true;
+
+    // Set up scroll event to detect if user has manually scrolled up
+    container.addEventListener('scroll', () => {
+        // If we're near the bottom (within 20px), we should auto-scroll
+        const isNearBottom = Math.abs(
+            (container.scrollHeight - container.clientHeight) - container.scrollTop
+        ) < 20;
+
+        shouldScrollToBottom = isNearBottom;
+    });
+
+    return {
+        // Call before adding content to decide if we should scroll after
+        shouldScroll: () => shouldScrollToBottom,
+
+        // Call after adding content to scroll if needed
+        scrollIfNeeded: () => {
+            if (shouldScrollToBottom) {
+                scrollToBottom(container);
+            }
+        }
+    };
+}

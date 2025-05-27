@@ -76,7 +76,7 @@ async function updateStateStoreDialog(url) {
         element.innerHTML = `
             <table class="table" style="width: 100%; border-collapse: collapse;">
                 <thead>
-                    <tr>
+                    <tr class="sticky-header">
                         <th>key</th>
                         <th>timestamp</th>
                         <th>data type</th>

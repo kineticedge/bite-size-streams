@@ -19,6 +19,8 @@ _run_sh() {
   )
 
   ks201_topologies=(
+    "ks201.SessionWindow: Session Window example"
+    "ks201.StreamToStreamJoin: Stream in [process] as a KStream and [windows] as a KStream and join"
     "ks201.EmitOnChange: Emit On Change example"
     "ks201.PoisonPill: Bad Message Handling"
     "ks201.TableToTableJoin: Join 2 KTables together"

@@ -82,10 +82,7 @@
     position: absolute;
     z-index: 10;
     background-color: transparent;
-}
-
-.dialog-corner {
-    background-color: rgba(255, 0, 0, 0.2);
+    background-color: rgba(222, 222, 222, 0.4);
 }
 
 .dialog-n, .dialog-s, dialog-e, dialog-w {
@@ -211,7 +208,13 @@
     border: solid #ccc 1px;
 }
 
-.ui-table th {
+/*.ui-table th {*/
+/*    position: sticky;*/
+/*    top: 0;*/
+/*    text-align: left;*/
+/*}*/
+
+.sticky-header {
     position: sticky;
     top: 0;
     text-align: left;
@@ -225,9 +228,11 @@
 }
 
 .table th {
-    position: sticky;
+    /*position: sticky;*/
     top: 0;
-    background-color: #009578;
+    //background-color: #009578;
+    background-color: #3366E0;
+    color: white;
     text-align: left;
 }
 
@@ -267,3 +272,64 @@
     /*font-size: 14px;*/
     line-height: 1.0 !important;
 }
+
+
+.json-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.json-table tbody th {
+    position: relative;
+    text-align: center;
+    background-color:#f8f8f8;
+}
+
+.json-table thead tr {
+    /*text-align: center;*/
+    background-color: #f0f0f0;
+}
+
+
+.json-table th {
+    padding: 6px 8px;
+    border-bottom: 1px solid #ddd;
+    /*background-color: #80CABC;*/
+    color: black;
+    background-color: #B3C4F7;
+}
+
+.json-table td {
+    padding: 6px 8px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    background-color: #dddddd;
+}
+
+.json-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/*.json-nested {*/
+/*    margin: 0;*/
+/*    white-space: pre-wrap;*/
+/*    max-height: 150px;*/
+/*    overflow-y: auto;*/
+/*    background-color: #f9f9f9;*/
+/*    padding: 4px;*/
+/*    border-radius: 3px;*/
+/*    font-family: monospace;*/
+/*    font-size: 12px;*/
+/*    text-align: left;*/
+/*}*/
+
+
+.json-table th, .json-table td,
+.json-table table th, .json-table table td {
+    min-width: 50px; /* Minimum width */
+    max-width: 250px; /* Maximum width */
+    overflow: hidden;
+    text-overflow: ellipsis; /* For text that's too long */
+    white-space: nowrap; /* Optional - keeps content on one line */
+}
+

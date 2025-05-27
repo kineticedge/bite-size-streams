@@ -46,21 +46,12 @@ public class StreamToStreamJoin extends BaseTopologyBuilder {
 
     processes.join(
             windows,
-            //(p, w) -> "processName=" + p.name() + " | windowId=" + w.windowId() + " | processIteration=" + p.iteration() + " | windowIteration=" + w.iteration(),
             (p, w) -> {
-
-              String difference;
-              if (p.iteration() > w.iteration()) {
-                difference = "process +" + (p.iteration() - w.iteration()) + "(" + ((p.ts() - w.ts()) / 1000.0) + "s)";
-              } else if (p.iteration() < w.iteration()) {
-                difference = "window +" + (w.iteration() - p.iteration()) + "(" + ((w.ts() - p.ts()) / 1000.0) + "s)";
-              } else {
-                difference = "";
-              }
-
               ObjectNode node = JsonNodeFactory.instance.objectNode();
-              node.put("id", p.name() + "_" + p.id() + "_" + w.id());
-              node.put("difference", difference);
+              node.put("pId", p.id());
+              node.put("wId", w.id());
+              node.put("pName", p.name());
+              node.put("difference", getDifference(p, w));
               return node;
             },
             JoinWindows.ofTimeDifferenceAndGrace(
@@ -69,6 +60,18 @@ public class StreamToStreamJoin extends BaseTopologyBuilder {
             ),
             StreamJoined.<String, OSProcess, OSWindow>as("join-stream")
     ).to(OUTPUT_TOPIC, Produced.<String, ObjectNode>as("output-sink"));
+  }
+
+  private static String getDifference(OSProcess p, OSWindow w) {
+    String difference;
+    if (p.iteration() > w.iteration()) {
+      difference = "process +" + (p.iteration() - w.iteration()) + "(" + ((p.ts() - w.ts()) / 1000.0) + "s)";
+    } else if (p.iteration() < w.iteration()) {
+      difference = "window +" + (w.iteration() - p.iteration()) + "(" + ((w.ts() - p.ts()) / 1000.0) + "s)";
+    } else {
+      difference = "";
+    }
+    return difference;
   }
 
 
