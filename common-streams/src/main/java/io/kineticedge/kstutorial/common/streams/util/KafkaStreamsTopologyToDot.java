@@ -74,16 +74,16 @@ public class KafkaStreamsTopologyToDot {
 //            }
             partitions = 2;
 
-            final StringBuilder ll = new StringBuilder("{ rank=same; \"" + linkedName + "\";");
-            IntStream.range(0, partitions).forEach(i -> {
-              final String xx = ln + "/" + i;
-              outside.add("\"" + ln + "\" -> \"" + xx + "\" [style=invis];");
-              topics.add(xx);
-//              System.out.println(" \"" + ln + "\";");
-              ll.append(" \"" + xx + "\";");
-            });
-            ll.append("}");
-            sames.add(ll.toString());
+//            final StringBuilder ll = new StringBuilder("{ rank=same; \"" + linkedName + "\";");
+//            IntStream.range(0, partitions).forEach(i -> {
+//              final String xx = ln + "/" + i;
+//              outside.add("\"" + ln + "\" -> \"" + xx + "\" [style=invis];");
+//              topics.add(xx);
+////              System.out.println(" \"" + ln + "\";");
+//              ll.append(" \"" + xx + "\";");
+//            });
+//            ll.append("}");
+//            sames.add(ll.toString());
             //sames.add("{ rank=same; \"" + linkedName + "\"; \"" + linkedName + "/0\"; \"" + linkedName + "/1\"; }");
 
 //            //NJB
@@ -98,27 +98,27 @@ public class KafkaStreamsTopologyToDot {
             outside.add("\"" + entityName + "\" -> \"" + linkedName + "\";");
             topics.add(linkedName);
 
-            //NJB
-            outside.add("\"" + linkedName + "\" -> \"" + linkedName + "/0\" [style=invis];");
-            topics.add(linkedName +"/0");
-
-            outside.add("\"" + linkedName + "\" -> \"" + linkedName + "/1\" [style=invis];");
-            topics.add(linkedName +"/1");
-
-            sames.add("{ rank=same; \"" + linkedName + "\"; \"" + linkedName + "/0\"; \"" + linkedName + "/1\"; }");
+//            //NJB
+//            outside.add("\"" + linkedName + "\" -> \"" + linkedName + "/0\" [style=invis];");
+//            topics.add(linkedName +"/0");
+//
+//            outside.add("\"" + linkedName + "\" -> \"" + linkedName + "/1\" [style=invis];");
+//            topics.add(linkedName +"/1");
+//
+//            sames.add("{ rank=same; \"" + linkedName + "\"; \"" + linkedName + "/0\"; \"" + linkedName + "/1\"; }");
 
           } else if (type.equals("stores")) {
             outside.add("\"" + entityName + "\" -> \"" + linkedName + "\";");
             stores.add(linkedName);
 
-            //NJB
-            outside.add("\"" + linkedName + "\" -> \"" + linkedName + "/0\" [style=invis];");
-            stores.add(linkedName +"/0");
-
-            outside.add("\"" + linkedName + "\" -> \"" + linkedName + "/1\" [style=invis];");
-            stores.add(linkedName +"/1");
-
-            sames.add("{ rank=same; \"" + linkedName + "\"; \"" + linkedName + "/0\"; \"" + linkedName + "/1\"; }");
+//            //NJB
+//            outside.add("\"" + linkedName + "\" -> \"" + linkedName + "/0\" [style=invis];");
+//            stores.add(linkedName +"/0");
+//
+//            outside.add("\"" + linkedName + "\" -> \"" + linkedName + "/1\" [style=invis];");
+//            stores.add(linkedName +"/1");
+//
+//            sames.add("{ rank=same; \"" + linkedName + "\"; \"" + linkedName + "/0\"; \"" + linkedName + "/1\"; }");
 
           }
         }
@@ -148,8 +148,8 @@ public class KafkaStreamsTopologyToDot {
     for (String store : stores) {
 
       if (store.endsWith("/0") || store.endsWith("/1")) {
-        String num = store.substring(store.lastIndexOf("/") + 1);
-        results.add("\"" + store + "\" [shape=egg, label=\"" + num + "\", href=\"/stores/" + store + "\"];");
+        //String num = store.substring(store.lastIndexOf("/") + 1);
+        //results.add("\"" + store + "\" [shape=egg, label=\"" + num + "\", href=\"/stores/" + store + "\"];");
       } else {
         results.add("\"" + store + "\" [shape=cylinder; label=\"" + store + "\", href=\"/stores/" + store + "\"];");
       }
@@ -180,8 +180,8 @@ public class KafkaStreamsTopologyToDot {
       }
 
       if (t.matches(".*(/\\d+)$")) {
-        String num = t.substring(t.lastIndexOf("/") + 1);
-        results.add("\"" + topic + "\" [shape=egg, label=\"" + num + "\", href=\"/events/" + t + "\"];");
+        //String num = t.substring(t.lastIndexOf("/") + 1);
+        //results.add("\"" + topic + "\" [shape=egg, label=\"" + num + "\", href=\"/events/" + t + "\"];");
       } else {
         results.add("\"" + topic + "\" [shape=rect, label=\"" + topic + "\", href=\"/events/" + t + "\"];");
       }

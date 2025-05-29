@@ -333,3 +333,36 @@
     white-space: nowrap; /* Optional - keeps content on one line */
 }
 
+
+
+.partition-selector {
+    display: inline-flex;
+    margin-right: 10px;
+}
+
+.partition-btn {
+    padding: 2px 8px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    background-color: #f5f5f5;
+    cursor: pointer;
+}
+
+.partition-btn:first-child {
+    border-radius: 3px 0 0 3px;
+}
+
+.partition-btn:last-child {
+    border-radius: 0 3px 3px 0;
+}
+
+.partition-btn.active {
+    background-color: #0078d7;
+    color: white;
+    border-color: #0078d7;
+}
+
+.dialog-buttons {
+    display: flex;
+    align-items: center;
+}

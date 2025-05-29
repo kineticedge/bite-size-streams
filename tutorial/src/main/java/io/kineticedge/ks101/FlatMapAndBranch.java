@@ -2,8 +2,6 @@ package io.kineticedge.ks101;
 
 import io.kineticedge.kstutorial.common.Constants;
 import io.kineticedge.kstutorial.common.main.BaseTopologyBuilder;
-import io.kineticedge.kstutorial.common.serde.JsonSerde;
-import io.kineticedge.kstutorial.common.serde.XmlSerde;
 import io.kineticedge.kstutorial.domain.OSProcess;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -11,7 +9,6 @@ import org.apache.kafka.streams.kstream.Branched;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.Named;
 import org.apache.kafka.streams.kstream.Produced;
-import org.apache.kafka.streams.kstream.Repartitioned;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +19,8 @@ public class FlatMapAndBranch extends BaseTopologyBuilder {
 
   private static final Logger log = LoggerFactory.getLogger(FlatMapAndBranch.class);
 
-  private static final String OUTPUT_TOPIC_SWITCHES = "FLATMAP-AND-BRANCH-ARGS-SWITCHES";
-  private static final String OUTPUT_TOPIC_OTHER = "FLATMAP-AND-BRANCH-ARGS-OTHER";
+  private static final String OUTPUT_NAMES_WITH_DOTS = "names-with-dots";
+  private static final String OUTPUT_NAMES_WITHOUT_DOTS = "names-without-dots";
 
   @Override
   public String applicationId() {
@@ -37,13 +34,13 @@ public class FlatMapAndBranch extends BaseTopologyBuilder {
             .peek(FlatMapAndBranch::print, Named.as("peek"))
             .split(Named.as("split"))
             .branch((k, v) -> v.contains("."), Branched.withConsumer(c -> {
-              c.to(OUTPUT_TOPIC_SWITCHES,
-                      Produced.<String, String>as(OUTPUT_TOPIC_SWITCHES + "-sink")
+              c.to(OUTPUT_NAMES_WITH_DOTS,
+                      Produced.<String, String>as(OUTPUT_NAMES_WITH_DOTS + "-sink")
                               .withValueSerde(Serdes.String()));
             }))
             .branch((k, v) -> true, Branched.withConsumer(c -> {
-              c.to(OUTPUT_TOPIC_OTHER,
-                      Produced.<String, String>as(OUTPUT_TOPIC_OTHER + "-sink")
+              c.to(OUTPUT_NAMES_WITHOUT_DOTS,
+                      Produced.<String, String>as(OUTPUT_NAMES_WITHOUT_DOTS + "-sink")
                               .withValueSerde(Serdes.String()));
             }));
   }
@@ -51,6 +48,6 @@ public class FlatMapAndBranch extends BaseTopologyBuilder {
 
   @Override
   public List<String> topics() {
-    return List.of(OUTPUT_TOPIC_SWITCHES, OUTPUT_TOPIC_OTHER);
+    return List.of(OUTPUT_NAMES_WITH_DOTS, OUTPUT_NAMES_WITHOUT_DOTS);
   }
 }
