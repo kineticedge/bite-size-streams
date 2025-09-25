@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 public class KTableTTL extends BaseTopologyBuilder {
@@ -39,6 +40,18 @@ public class KTableTTL extends BaseTopologyBuilder {
   @Override
   public String applicationId() {
     return "table-ttl";
+  }
+
+  @Override
+  public Map<String, String> metadata() {
+
+    String ttlBasedOn = isFeatureEnabled() ? "stream-time" : "system-time";
+
+    return map(coreMetadata(),
+            Map.entry("caching", isCachingDisabled() ? "disabled" : "enabled"),
+            Map.entry("punctuation", punctuationType().name().toLowerCase()),
+            Map.entry("TTL age on", ttlBasedOn)
+    );
   }
 
   @Override
@@ -70,7 +83,10 @@ public class KTableTTL extends BaseTopologyBuilder {
                         while (iterator.hasNext()) {
                           final KeyValue<String, ValueAndTimestamp<OSProcess>> item = iterator.next();
                           log.info("key={}, timestamp={}", item.key, format(item.value.timestamp()));
-                          if (this.context.currentStreamTimeMs() > item.value.timestamp() + MAX_TIME_TO_LIVE) {
+
+                          //TODO how to show this in UI!
+                          final long threshold = (isFeatureEnabled()) ? this.context.currentStreamTimeMs() : System.currentTimeMillis();
+                          if (threshold > item.value.timestamp() + MAX_TIME_TO_LIVE) {
                             log.info("removing key={}", item.key);
                             store.delete(item.key);
                           }

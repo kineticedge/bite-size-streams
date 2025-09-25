@@ -5,6 +5,7 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import io.kineticedge.kstutorial.common.config.Options;
 import io.kineticedge.kstutorial.common.config.OptionsUtil;
+import io.kineticedge.kstutorial.common.config.WindowConfig;
 import io.kineticedge.kstutorial.common.streams.KafkaStreamsRunner;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -16,6 +17,8 @@ import org.apache.kafka.clients.admin.RecordsToDelete;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.kstream.EmitStrategy;
+import org.apache.kafka.streams.processor.PunctuationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +26,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -149,7 +153,16 @@ public class Main {
 
     final Topology topology = topologyBuilder.topology();
 
-    final KafkaStreamsRunner runner = new KafkaStreamsRunner(topologyBuilder.applicationId(), topology, config);
+//    Map<String, String> metadata = new LinkedHashMap<>();
+
+//    metadata.put("caching", topologyBuilder.isCachingDisabled() ? "disabled" : "enabled");
+//    metadata.put("feature", topologyBuilder.isFeatureDisabled() ? "disabled" : "enabled");
+//
+//    metadata.put("punctuationType", topologyBuilder.punctuationType().name());
+//    metadata.put("emitStrategy", topologyBuilder.emitStrategy().toString());
+//    metadata.put("windowConfig", topologyBuilder.windowConfig().toString());
+
+    final KafkaStreamsRunner runner = new KafkaStreamsRunner(topologyBuilder.applicationId(), topology, config, topologyBuilder.metadata());
 
     runner.start();
 

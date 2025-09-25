@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.kineticedge.kstutorial.common.Constants;
 import io.kineticedge.kstutorial.common.main.BaseTopologyBuilder;
+import io.kineticedge.kstutorial.common.streams.util.DurationParser;
 import io.kineticedge.kstutorial.domain.OSProcess;
 import io.kineticedge.kstutorial.domain.OSWindow;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -20,6 +21,8 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @SuppressWarnings("unused")
 public class StreamToStreamJoin extends BaseTopologyBuilder {
@@ -33,6 +36,26 @@ public class StreamToStreamJoin extends BaseTopologyBuilder {
     return "stream-to-stream-join";
   }
 
+  @Override
+  public Map<String, String> metadata() {
+
+    return map(
+            Map.entry("caching", isCachingDisabled() ? "disabled" : "enabled"),
+            Map.entry("feature", isFeatureDisabled() ? "disabled" : "enabled"),
+            Map.entry("window-size", DurationParser.toString(windowConfig().size().orElse(Duration.ofSeconds(5L)))),
+            Map.entry("window-grace", DurationParser.toString(windowConfig().size().orElse(Duration.ofSeconds(1L))))
+    );
+
+//    Optional<Duration> size,
+//    Optional<Duration> grace,
+//    Optional<Duration> advance,
+//    Optional<Duration> retention
+//
+//    windowConfig().size().orElse(Duration.ofSeconds(5L)),
+//            windowConfig().grace().orElse(Duration.ofSeconds(1L))
+//
+//
+  }
 
   @Override
   protected void build(StreamsBuilder builder) {

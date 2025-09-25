@@ -2,6 +2,7 @@ package io.kineticedge.kstutorial.common.streams.http;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import io.kineticedge.kstutorial.common.main.BaseTopologyBuilder;
 import io.kineticedge.kstutorial.common.streams.metadata.StreamInfo;
 import io.kineticedge.kstutorial.common.streams.util.StreamInternalsUtil;
 import io.kineticedge.kstutorial.common.util.JsonUtil;
@@ -9,14 +10,16 @@ import org.apache.kafka.streams.KafkaStreams;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.concurrent.locks.LockSupport;
 
 public class ThreadsHandler implements HttpHandler {
 
   private final KafkaStreams kafkaStreams;
-
-  public ThreadsHandler(final KafkaStreams kafkaStreams) {
+  private final Map<String, String> metadata;
+  public ThreadsHandler(final KafkaStreams kafkaStreams, Map<String, String> metadata) {
     this.kafkaStreams = kafkaStreams;
+    this.metadata = metadata;
   }
 
   @Override
@@ -36,7 +39,8 @@ public class ThreadsHandler implements HttpHandler {
           StreamInfo streamInfo = new StreamInfo(
                   StreamInternalsUtil.printApplicationId(kafkaStreams),
                   StreamInternalsUtil.monitorLastCommit(kafkaStreams),
-                  StreamInternalsUtil.printStreamTimesBySubtopology(kafkaStreams)
+                  StreamInternalsUtil.printStreamTimesBySubtopology(kafkaStreams),
+                  metadata
           );
           String data = "data: " + JsonUtil.objectMapper().writeValueAsString(streamInfo) + "\n\n";
           os.write(data.getBytes());

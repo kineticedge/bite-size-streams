@@ -28,12 +28,16 @@
         </div>
         <div id="response"></div>
         <br/>
-        <div><span style="color:blue;font-weight: bold;" id="applicationId"></span></div>
-        <div><span style="color:green;font-weight: bold;" id="currentTime">&nbsp;</span></div>
+<!--        <div><span style="color:blue;font-weight: bold;" id="applicationId"></span></div>-->
+        <table class="ui-table2">
+            <tbody id="metadata">
+            <!-- Rows will be dynamically populated here -->
+            </tbody>
+        </table>
         <table id="subtopologyTable" class="ui-table">
             <thead>
             <tr>
-                <th>&nbsp;</th>
+                <th>task</th>
                 <th>event time</th>
             </tr>
             </thead>
@@ -44,20 +48,22 @@
         <table id="commitTable" class="ui-table">
             <thead>
             <tr>
-                <th>&nbsp;</th>
-                <th>commit time</th>
+                <th>thread</th>
+                <th>commit time &amp; tasks</th>
             </tr>
             </thead>
             <tbody>
             <!-- Rows will be dynamically populated here -->
             </tbody>
         </table>
+        <div><span style="color:green;font-weight: bold;" id="currentTime">&nbsp;</span></div>
     </div>
     <div class="right">
         <div id="graph-container" class="canvas-container">
             <div id="graph" class="canvas">
             </div>
         </div>
+<!--        <div><span style="color:green;font-weight: bold;" id="currentTime">&nbsp;</span></div>-->
     </div>
 </div>
 <div>

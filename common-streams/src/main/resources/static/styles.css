@@ -190,6 +190,10 @@
     width: 100%; /* or a specific width in pixels */
 }
 
+.ui-table th {
+    text-align: left;
+}
+
 /* Set specific widths for columns */
 .ui-table th:nth-child(1),
 .ui-table td:nth-child(1) {
@@ -201,12 +205,44 @@
     width: 80%; /* adjust as needed */
 }
 
-
 .ui-table {
     border-collapse: collapse;
     width: 100%;
     border: solid #ccc 1px;
 }
+
+.ui-table2 {
+    /*table-layout: fixed;*/
+    width: 100%; /* or a specific width in pixels */
+    /*border-collapse: collapse;*/
+    border: 0px;
+    /*font-size: 32px;*/
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.ui-table2 td:first-child {
+    font-weight: 400; /* bold first column */
+    width: 40%;
+}
+
+.ui-table2 td:nth-child(2) {
+    font-weight: 700; /* normal second column */
+    width: 60%;
+    color: #0000ff;
+}
+
+/*!* Set specific widths for columns *!*/
+/*.ui-table2 th:nth-child(1),*/
+/*.ui-table2 td:nth-child(1) {*/
+/*    width: 40%; !* adjust as needed *!*/
+/*}*/
+
+/*.ui-table2 th:nth-child(2),*/
+/*.ui-table2 td:nth-child(2) {*/
+/*    width: 60%; !* adjust as needed *!*/
+/*}*/
+
 
 /*.ui-table th {*/
 /*    position: sticky;*/

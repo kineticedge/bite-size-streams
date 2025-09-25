@@ -118,6 +118,9 @@ function createDialog(x, y, title, content, onclose) {
                 <div class="dialog-close-btn"></div>
                 <div class="dialog-title">${title}</div>
                 <div class="dialog-buttons">
+                    <span>
+                        <input type="checkbox" id="refreshToggle" class="dialog-auto-refresh"/>
+                    </span>
                     <span class="dialog-clear-btn">
                         <svg viewBox="-0.5 -0.5 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" height="16" width="16">
                             <path d="M13.125 3.375v8.25c0 0.51525 -0.5625 0.82875 -0.984375 0.54675l-4.37625 -2.91375v2.36625c0 0.51525 -0.5625 0.82875 -0.984375 0.54675l-4.6875 -3.125c-0.375 -0.249375 -0.375 -0.8006250000000001 0 -1.05l4.6875 -3.125c0.421875 -0.282 0.984375 0.03075 0.984375 0.54675v2.36625l4.37625 -2.91375c0.421875 -0.282 0.984375 0.03075 0.984375 0.54675Z" transform="translate(-1.5, 0)" stroke-width="1"></path>
@@ -131,7 +134,33 @@ function createDialog(x, y, title, content, onclose) {
             <div class="dialog-handle"></div>
         `;
 
+    let refreshTimerId = null;
+
+    dialog.querySelector(".dialog-auto-refresh").onclick = () => {
+        if (dialog.querySelector(".dialog-auto-refresh").checked) {
+            console.log("Auto-refresh is enabled");
+
+            // If already scheduled, clear it before scheduling again
+            if (refreshTimerId !== null) {
+                clearInterval(refreshTimerId);
+            }
+            loadTableData(dialog, title);
+            refreshTimerId = setInterval(() => loadTableData(dialog, title), 5000);
+
+        } else {
+            console.log("Auto-refresh is disabled");
+            if (refreshTimerId !== null) {
+                clearInterval(refreshTimerId);
+                refreshTimerId = null;
+            }
+        }
+    };
+
     dialog.querySelector(".dialog-close-btn").onclick = () => {
+        if (refreshTimerId !== null) {
+            clearInterval(refreshTimerId);
+            refreshTimerId = null;
+        }
         dialog.remove();
         onclose();
     };

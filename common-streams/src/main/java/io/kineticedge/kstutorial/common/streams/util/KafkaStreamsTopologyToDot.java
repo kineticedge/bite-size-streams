@@ -190,7 +190,7 @@ public class KafkaStreamsTopologyToDot {
     // Combine everything into DOT format
     return "digraph {\n" +
             //"graph [layout=dot, size=\"100%,100%\", ratio=fill];\n" +
-            "\tlabel = \"Kafka Streams Topology\"\n\n" +
+//            "\tlabel = \" application.id=" + applicationId + "\"\n\n" +
             String.join("\n", results) +
             "\n}";
   }

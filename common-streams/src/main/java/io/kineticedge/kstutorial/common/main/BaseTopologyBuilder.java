@@ -5,6 +5,7 @@ import io.kineticedge.kstutorial.common.config.WindowConfig;
 import io.kineticedge.kstutorial.common.serde.JsonSerde;
 import io.kineticedge.kstutorial.common.streams.SimpleProcessingExceptionHandler;
 import io.kineticedge.kstutorial.common.streams.ThrottlingDeserializationExceptionHandler;
+import io.kineticedge.kstutorial.common.streams.util.DurationParser;
 import io.kineticedge.kstutorial.domain.Id;
 import io.kineticedge.kstutorial.domain.OSWindow;
 import io.kineticedge.kstutorial.domain.Rectangle;
@@ -19,11 +20,14 @@ import org.apache.kafka.streams.kstream.Window;
 import org.apache.kafka.streams.kstream.Windowed;
 import org.apache.kafka.streams.processor.PunctuationType;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -116,12 +120,37 @@ public abstract class BaseTopologyBuilder implements TopologyBuilder {
     };
   }
 
+  protected EmitStrategy.StrategyType emitStrategyType() {
+    return topologyConfig.emitStrategy() != null ? topologyConfig.emitStrategy() : EmitStrategy.StrategyType.ON_WINDOW_UPDATE;
+  }
+
   protected PunctuationType punctuationType() {
     return topologyConfig.punctuationType();
   }
 
   protected WindowConfig windowConfig() {
     return topologyConfig.windowConfig();
+  }
+
+  public Map<String, String> coreMetadata() {
+
+    Map<String, String> map = new LinkedHashMap<>();
+
+    map.put("applicationId", applicationId());
+    topologyConfig.numThreads().ifPresent(v -> map.put("numThreads", v.toString()));
+    topologyConfig.commitInterval().ifPresent(v -> {
+      Duration d = Duration.ofMillis(v);
+      map.put("commitInterval", DurationParser.toString(d));
+    });
+    topologyConfig.optimization().filter(v -> !"none".equals(v)).ifPresent(v -> map.put("optimization", v));
+    topologyConfig.eosEnabled().filter(v -> v).ifPresent(v -> map.put("eos", "enabled"));
+
+    return map;
+  }
+
+  @Override
+  public Map<String, String> metadata() {
+    return coreMetadata();
   }
 
   @Override
@@ -180,6 +209,25 @@ public abstract class BaseTopologyBuilder implements TopologyBuilder {
 
   protected static String rectangleToString(OSWindow window) {
     return String.format("pos=(%d,%d) dimensions=%dx%d", window.x(), window.y(), window.width(), window.height());
+  }
+
+  @SafeVarargs
+  protected static <K, V> Map<K, V> map(Map.Entry<K, V>... entries) {
+    LinkedHashMap<K, V> map = LinkedHashMap.newLinkedHashMap(entries.length);
+    for (Map.Entry<K, V> e : entries) {
+      map.put(e.getKey(), e.getValue());
+    }
+    return Collections.unmodifiableMap(map);
+  }
+
+  @SafeVarargs
+  protected static <K, V> Map<K, V> map(Map<K, V> initial, Map.Entry<K, V>... entries) {
+    LinkedHashMap<K, V> map = LinkedHashMap.newLinkedHashMap(initial.size() + entries.length);
+    map.putAll(initial);
+    for (Map.Entry<K, V> e : entries) {
+      map.put(e.getKey(), e.getValue());
+    }
+    return Collections.unmodifiableMap(map);
   }
 
 }

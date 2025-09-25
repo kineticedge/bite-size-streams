@@ -1,5 +1,6 @@
 package io.kineticedge.kstutorial.common.streams.http;
 
+import io.kineticedge.kstutorial.common.main.BaseTopologyBuilder;
 import io.kineticedge.kstutorial.common.streams.util.ClasspathStaticFileHandler;
 import io.kineticedge.kstutorial.producer.Emitter;
 import org.apache.kafka.streams.KafkaStreams;
@@ -8,6 +9,7 @@ import org.apache.kafka.streams.Topology;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -20,7 +22,7 @@ public class WebServer {
 
   private final com.sun.net.httpserver.HttpServer httpServer;
 
-  public WebServer(int port, String applicationId, Topology topology, KafkaStreams kafkaStreams) throws IOException {
+  public WebServer(int port, String applicationId, Topology topology, KafkaStreams kafkaStreams, Map<String, String> metadata) throws IOException {
 
     httpServer = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress(InetAddress.getByName("0.0.0.0"), port), 100);
 
@@ -49,7 +51,7 @@ public class WebServer {
     httpServer.createContext("/emit", new EmitHandler(emitter));
     httpServer.createContext("/check", new CheckHandler(emitter));
     httpServer.createContext("/processes", new ProcessesHandler());
-    httpServer.createContext("/threads", new ThreadsHandler(kafkaStreams));
+    httpServer.createContext("/threads", new ThreadsHandler(kafkaStreams, metadata));
     httpServer.createContext("/stores", new StoresHandler(kafkaStreams));
     httpServer.createContext("/metrics", new MetricsHandler());
     httpServer.createContext("/metrics2", new MetricsHandler());

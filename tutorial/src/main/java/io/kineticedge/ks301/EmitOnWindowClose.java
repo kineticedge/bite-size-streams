@@ -9,6 +9,7 @@ import io.kineticedge.kstutorial.domain.OSProcessCount;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
+import org.apache.kafka.streams.kstream.EmitStrategy;
 import org.apache.kafka.streams.kstream.Grouped;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Materialized;
@@ -38,6 +39,16 @@ public class EmitOnWindowClose extends BaseTopologyBuilder {
   };
 
   private static final String OUTPUT_TOPIC = "emit-on-window-close-output";
+
+  @Override
+  public Map<String, String> metadata() {
+    return map(
+            Map.entry("caching", isCachingDisabled() ? "disabled" : "enabled"),
+            Map.entry("feature", isFeatureDisabled() ? "disabled" : "enabled"),
+            Map.entry("emit", emitStrategyType().name())
+    );
+  }
+
 
   @Override
   public String applicationId() {

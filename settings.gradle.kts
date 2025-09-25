@@ -1,4 +1,4 @@
-rootProject.name = "kafka-streams-tutorial"
+rootProject.name = "bite-size-streams"
 
 buildscript {
     repositories {

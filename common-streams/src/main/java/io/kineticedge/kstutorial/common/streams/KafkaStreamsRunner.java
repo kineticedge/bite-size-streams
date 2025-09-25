@@ -31,11 +31,13 @@ public class KafkaStreamsRunner {
   private final Map<String, Object> config;
 
   private KafkaStreams streams;
+  private Map<String, String> metadata;
 
-  public KafkaStreamsRunner(String applicationId, Topology topology, Map<String, Object> config) {
+  public KafkaStreamsRunner(String applicationId, Topology topology, Map<String, Object> config, Map<String, String> metadata) {
     this.applicationId = applicationId;
     this.topology = topology;
     this.config = config;
+    this.metadata = metadata;
   }
 
   public KafkaStreams getStreams() {
@@ -136,7 +138,7 @@ public class KafkaStreamsRunner {
             System.out.println("FIRST TO RUNNING __ TODO");
 
             try {
-              WebServer server = new WebServer(8080, applicationId, topology, streams);
+              WebServer server = new WebServer(8080, applicationId, topology, streams, metadata);
               server.start();
             } catch (IOException e) {
               throw new RuntimeException(e);

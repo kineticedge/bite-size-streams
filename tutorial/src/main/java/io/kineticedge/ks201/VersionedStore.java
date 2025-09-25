@@ -2,6 +2,7 @@ package io.kineticedge.ks201;
 
 import io.kineticedge.kstutorial.common.Constants;
 import io.kineticedge.kstutorial.common.main.BaseTopologyBuilder;
+import io.kineticedge.kstutorial.common.streams.metadata.RangeQueryableVersionedStoreBuilder;
 import io.kineticedge.kstutorial.domain.OSProcess;
 import io.kineticedge.kstutorial.domain.OSWindow;
 import org.apache.kafka.common.serialization.Serdes;
@@ -45,23 +46,29 @@ public class VersionedStore extends BaseTopologyBuilder {
     KStream<String, OSProcess> processes = builder
             .<String, OSProcess>stream(Constants.PROCESSES, Consumed.as("processes-source"))
             .processValues(new FixedKeyProcessorSupplier<>() {
-              public ContextualFixedKeyProcessor<String, OSProcess, OSProcess> get() {
-                return new ContextualFixedKeyProcessor<>() {
-                  public void process(FixedKeyRecord<String, OSProcess> record) {
-                    VersionedKeyValueStore<String, OSProcess> store = context().getStateStore(STORE_NAME);
-                    store.put(record.key(), record.value(), record.timestamp());
-                    context().forward(record);
-                  }
-                };
-              }
-              public Set<StoreBuilder<?>> stores() {
-                return Set.of(Stores.versionedKeyValueStoreBuilder(
-                                Stores.persistentVersionedKeyValueStore(STORE_NAME, windowConfig().retention().orElse(Duration.ofMinutes(1L))),
-                                null, null));
-              }
-            }
-            , Named.as("processValues-put")
-      );
+                             public ContextualFixedKeyProcessor<String, OSProcess, OSProcess> get() {
+                               return new ContextualFixedKeyProcessor<>() {
+                                 public void process(FixedKeyRecord<String, OSProcess> record) {
+                                   VersionedKeyValueStore<String, OSProcess> store = context().getStateStore(STORE_NAME);
+                                   store.put(record.key(), record.value(), record.timestamp());
+                                   context().forward(record);
+                                 }
+                               };
+                             }
+
+                             public Set<StoreBuilder<?>> stores() {
+                               return Set.of(
+
+                                       new RangeQueryableVersionedStoreBuilder<>(
+                                               Stores.versionedKeyValueStoreBuilder(
+                                                       Stores.persistentVersionedKeyValueStore(STORE_NAME, windowConfig().retention().orElse(Duration.ofMinutes(5L))),
+                                                       null, null)
+                                       )
+                               );
+                             }
+                           }
+                    , Named.as("processValues-put")
+            );
 
     builder.<String, OSWindow>stream(Constants.WINDOWS, Consumed.as("windows-source"))
             .selectKey((k, v) -> "" + v.processId(), Named.as("select-key-owning-process-id"))
@@ -78,7 +85,7 @@ public class VersionedStore extends BaseTopologyBuilder {
 
   private static String asString(FixedKeyRecord<String, OSWindow> r, VersionedRecord<OSProcess> vr) {
     return String.format("windowId=%s, processName=%s, uptime=%s",
-            r.value().windowId(), vr.value().name(), formatUptime(vr.value().upTime()));
+            r.value().windowId(), vr.value().name(), vr.value().upTime());
   }
 
   @Override

@@ -16,10 +16,10 @@ public class Options extends BaseOptions {
   private TopologyBuilder topologyBuilder;
 
   @Parameter(names = "--num-threads")
-  private Integer numThreads;
+  private Integer numThreads = 1;
 
   @Parameter(names = "--commit-interval")
-  private Long commitInterval;
+  private Long commitInterval = 5_000L;
 
   @Parameter(names = "--optimization")
   private String optimization = StreamsConfig.NO_OPTIMIZATION;

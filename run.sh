@@ -15,8 +15,8 @@ gradle assemble > /dev/null
 
 MAIN="io.kineticedge.kstutorial.common.main.Main"
 
-#REMOTE="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005"
 REMOTE=""
+#REMOTE="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005"
 
 
 TOPOLOGY=$1

@@ -4,8 +4,8 @@ import org.mapstruct.Named;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -14,7 +14,7 @@ public final class MapperHelper {
   private static final String HOSTNAME;
 
   private static final AtomicInteger iteration = new AtomicInteger(0);
-  private static final AtomicLong ts = new AtomicLong(0L);
+  private static final AtomicLong ts = new AtomicLong(1L);
 
   static {
     try {
@@ -53,8 +53,20 @@ public final class MapperHelper {
   }
 
   public static void incrementIteration() {
-    iteration.incrementAndGet();
+//    int current = iteration.get() + 1;
+//    iteration.set(current * 10);
     ts.set(System.currentTimeMillis());
+  }
+
+  @Named("uptimeToString")
+  public static String formatUptime(long uptimeMs) {
+    Duration duration = Duration.ofMillis(uptimeMs);
+    long days = duration.toDays();
+    long hours = duration.toHoursPart();
+    long minutes = duration.toMinutesPart();
+    long seconds = duration.toSecondsPart();
+    long millis = duration.toMillisPart();
+    return String.format("%dd,%02d:%02d:%02d.%03d", days, hours, minutes, seconds, millis);
   }
 
 }

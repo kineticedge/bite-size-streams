@@ -16,6 +16,7 @@ _run_sh() {
     "ks101.TimestampPropagation: Shows event timestamp through sub-topologies and how to change it"
     "ks101.KTableOptimized: KTable Optimized example"
     "ks101.Immutability: The importance of immutability within the topology"
+    "ks101.Tombstoning: understanding how to delete from key value store"
   )
 
   ks201_topologies=(

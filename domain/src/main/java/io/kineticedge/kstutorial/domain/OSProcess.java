@@ -3,6 +3,8 @@ package io.kineticedge.kstutorial.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import java.time.Instant;
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "_type")
 public record OSProcess(
         int processId,
@@ -10,8 +12,8 @@ public record OSProcess(
         //String user,
         int parentProcessId,
         int threadCount,
-        long startTime,
-        long upTime,
+        Instant startTime,
+        String upTime,
         int iteration,
         long ts
 ) implements Id {
@@ -28,8 +30,8 @@ public record OSProcess(
             //null,
             0,
             0,
-            0L,
-            0L,
+            null,
+            null,
             0,
             0
     );
