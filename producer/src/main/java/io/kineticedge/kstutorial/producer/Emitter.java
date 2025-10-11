@@ -4,10 +4,7 @@ import io.kineticedge.kstutorial.common.Constants;
 import io.kineticedge.kstutorial.domain.Id;
 import io.kineticedge.kstutorial.producer.collector.MapperHelper;
 import io.kineticedge.kstutorial.producer.collector.ProcessMapper;
-import io.kineticedge.kstutorial.producer.collector.ServiceMapper;
-import io.kineticedge.kstutorial.producer.collector.ThreadMapper;
 import io.kineticedge.kstutorial.producer.collector.WindowMapper;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oshi.SystemInfo;
@@ -41,8 +38,8 @@ public class Emitter {
     producer = new Producer(options);
   }
 
-  public Emitter(final String bootstrapServers) {
-    producer = new Producer(bootstrapServers);
+  public Emitter(final String bootstrapServers, final long lingerMs) {
+    producer = new Producer(bootstrapServers, lingerMs);
   }
 
   public void poisonPill() {
@@ -85,28 +82,45 @@ public class Emitter {
     // track IDs of emission to keep track of what events get joined.
     MapperHelper.incrementIteration();
 
-    final Set<Long> proccessIds = Stream.concat(
+    final Set<io.kineticedge.kstutorial.domain.OSProcess> proccesses = Stream.concat(
                     (parent != 1 ? Optional.of(os.getProcess(parent)) : Optional.<OSProcess>empty()).stream(),
                     os.getDescendantProcesses(parent, null, null, 0).stream()
             )
             .map(ProcessMapper.INSTANCE::convert)
-            .peek(p -> {
-              if (includeProcesses()) {
-                producer.publish(Constants.PROCESSES, p, (System.currentTimeMillis() - (age * 1000L)));
-              }
-            })
-            .map(p -> (long) p.processId())
+//            .peek(p -> {
+//              if (includeProcesses()) {
+//                producer.publish(Constants.PROCESSES, p, messageTimestamp(Constants.PROCESSES));
+//              }
+//            })
+//            .map(p -> (long) p.processId())
             .collect(Collectors.toSet());
 
+    final Set<Long> proccessIds = proccesses.stream().map(p -> (long) p.processId()).collect(Collectors.toSet());
+
     log.debug("process Ids: {}", proccessIds);
+
+    if (includeProcesses()) {
+      proccesses.forEach(p -> producer.publish(Constants.PROCESSES, p, messageTimestamp(Constants.PROCESSES)));
+    }
 
     if (includeWindows()) {
       os.getDesktopWindows(true).stream()
               .map(WindowMapper.INSTANCE::convert)
               .filter(w -> !ignoredWindows.contains(w.title())) //TODO was command now title, need to verify ok/good
               .filter(w -> proccessIds.contains(w.processId()))
-              .forEach(w -> producer.publish(Constants.WINDOWS, w, (System.currentTimeMillis() - (age * 1000L))));
+              .forEach(w -> producer.publish(Constants.WINDOWS, w, messageTimestamp(Constants.WINDOWS)));
     }
+
+    if (includeProcessesDelayed()) {
+      producer.flush();
+      try {
+        Thread.sleep(50L);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+      proccesses.forEach(p -> producer.publish(Constants.PROCESSES, p, messageTimestamp(Constants.PROCESSES)));
+    }
+
 
 //    if (!windowsOnly) {
 //      os.getServices().stream()
@@ -135,12 +149,24 @@ public class Emitter {
 //    return windowsOnly != null && windowsOnly;
 //  }
 
+  private long messageTimestamp(final String topic) {
+//    if ("processes-delayed".equals(types) && Constants.PROCESSES.equals(topic)) {
+//      // process gets current time, all other topics are aged accordingly.
+//      return System.currentTimeMillis();
+//    }
+    return System.currentTimeMillis() - (age * 1000L);
+  }
+
   private boolean includeProcesses() {
     return types == null || "all".equals(types) || "processes".equals(types);
   }
 
   private boolean includeWindows() {
-    return types == null || "all".equals(types) || "windows".equals(types);
+    return types == null || "all".equals(types) || "windows".equals(types) || "processes-delayed".equals(types);
+  }
+
+  private boolean includeProcessesDelayed() {
+    return "processes-delayed".equals(types);
   }
 
 }

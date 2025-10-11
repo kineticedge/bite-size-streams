@@ -3,7 +3,6 @@ package io.kineticedge.ks101;
 import io.kineticedge.kstutorial.common.Constants;
 import io.kineticedge.kstutorial.common.main.BaseTopologyBuilder;
 import io.kineticedge.kstutorial.domain.OSProcess;
-import io.kineticedge.kstutorial.domain.OSThread;
 import io.kineticedge.kstutorial.domain.OSWindow;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
@@ -14,12 +13,11 @@ import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Named;
 import org.apache.kafka.streams.kstream.Produced;
-import org.apache.kafka.streams.kstream.ValueJoiner;
+import org.apache.kafka.streams.kstream.Repartitioned;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.Key;
 import java.util.List;
 
 @SuppressWarnings("unused")
@@ -57,13 +55,17 @@ public class StreamToTableJoin extends BaseTopologyBuilder {
             ).selectKey((k, v) -> "" + v.processId(), Named.as("windows-selectKey"))
             .join(
                     processes,
-                    (window, process) -> "pId=" + process.processId() + ", wI d=" + window.windowId() + " : " + rectangleToString(window),
+                    StreamToTableJoin::asString,
                     Joined.as("window-to-process-joiner")
             )
             .to(OUTPUT_TOPIC,
                     Produced.<String, String>as("output-sink")
                             .withValueSerde(Serdes.String())
             );
+  }
+
+  private static String asString(OSWindow window, OSProcess process) {
+    return "pId=" + process.processId() + "(" + process.iteration() + "), wId=" + window.windowId() + "(" + window.iteration() + ") " + rectangleToString(window);
   }
 
 

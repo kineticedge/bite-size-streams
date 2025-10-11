@@ -8,6 +8,12 @@ import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics;
 import io.micrometer.prometheusmetrics.PrometheusConfig;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
+import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AlterConfigOp;
+import org.apache.kafka.clients.admin.Config;
+import org.apache.kafka.clients.admin.ConfigEntry;
+import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler;
@@ -16,8 +22,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class KafkaStreamsRunner {
@@ -33,11 +43,14 @@ public class KafkaStreamsRunner {
   private KafkaStreams streams;
   private Map<String, String> metadata;
 
-  public KafkaStreamsRunner(String applicationId, Topology topology, Map<String, Object> config, Map<String, String> metadata) {
+  private long lingerMs;
+
+  public KafkaStreamsRunner(String applicationId, Topology topology, Map<String, Object> config, Map<String, String> metadata, long lingerMs) {
     this.applicationId = applicationId;
     this.topology = topology;
     this.config = config;
     this.metadata = metadata;
+    this.lingerMs = lingerMs;
   }
 
   public KafkaStreams getStreams() {
@@ -131,14 +144,19 @@ public class KafkaStreamsRunner {
             }
     );
 
+    AtomicBoolean ranOnce = new AtomicBoolean(false);
+
     streams.setStateListener((newState, oldState) -> {
+
         if (newState == KafkaStreams.State.RUNNING) {
 
           if (first.compareAndSet(false, true)) {
+
             System.out.println("FIRST TO RUNNING __ TODO");
+          //  misconfigure();
 
             try {
-              WebServer server = new WebServer(8080, applicationId, topology, streams, metadata);
+              WebServer server = new WebServer(8080, applicationId, topology, streams, metadata, lingerMs);
               server.start();
             } catch (IOException e) {
               throw new RuntimeException(e);
@@ -195,4 +213,34 @@ public class KafkaStreamsRunner {
     return properties;
   }
 
+  private void misconfigure() {
+    try (AdminClient client = AdminClient.create(Map.ofEntries(
+            Map.entry(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, config.get(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG)),
+            Map.entry(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "PLAINTEXT")
+    ))) {
+      client.listTopics().listings().get().forEach(existing -> {
+        if (existing.name().startsWith(applicationId + "-")) {
+          if (existing.name().endsWith("-repartition")) {
+              ConfigResource resource = new ConfigResource(ConfigResource.Type.TOPIC, existing.name());
+              Collection<AlterConfigOp> configOps = List.of(
+                      new AlterConfigOp(new ConfigEntry("message.timestamp.type", "LogAppendTime"), AlterConfigOp.OpType.SET)
+              );
+              Map<ConfigResource, Collection<AlterConfigOp>> updates = Map.of(resource, configOps);
+              try {
+                client.incrementalAlterConfigs(updates).all().get();
+              } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+              } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+              }
+          }
+        }
+      });
+
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

@@ -53,9 +53,10 @@ public final class MapperHelper {
   }
 
   public static void incrementIteration() {
+    iteration.incrementAndGet();
 //    int current = iteration.get() + 1;
 //    iteration.set(current * 10);
-    ts.set(System.currentTimeMillis());
+//    ts.set(System.currentTimeMillis());
   }
 
   @Named("uptimeToString")

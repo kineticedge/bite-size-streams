@@ -26,8 +26,8 @@ public class Producer {
         kafkaProducer = new KafkaProducer<>(properties(options));
     }
 
-    public Producer(final String bootstrapServers) {
-        kafkaProducer = new KafkaProducer<>(properties(bootstrapServers));
+    public Producer(final String bootstrapServers,  final long lingerMs) {
+        kafkaProducer = new KafkaProducer<>(properties(bootstrapServers,  lingerMs));
     }
 
     public void flush() {
@@ -62,16 +62,16 @@ public class Producer {
 
 
     private Map<String, Object> properties(final Options options) {
-        return properties(options.bootstrapServers());
+        return properties(options.bootstrapServers(), 50);
     }
 
-    private Map<String, Object> properties(final String bootstrapServers) {
+    private Map<String, Object> properties(final String bootstrapServers, final long lingerMs) {
         Map<String, Object> defaults = Map.ofEntries(
                 Map.entry(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers),
                 Map.entry(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "PLAINTEXT"),
                 Map.entry(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName()),
                 Map.entry(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName()),
-                Map.entry(ProducerConfig.LINGER_MS_CONFIG, 50L),
+                Map.entry(ProducerConfig.LINGER_MS_CONFIG, lingerMs),
                 Map.entry(ProducerConfig.BATCH_SIZE_CONFIG, 100_000),
                 Map.entry(ProducerConfig.ACKS_CONFIG, "all")
         );

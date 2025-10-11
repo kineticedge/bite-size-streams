@@ -3,7 +3,6 @@ val junit_pioneer_version: String by project
 val junit_version: String by project
 
 dependencies {
-    testImplementation("org.junit-pioneer:junit-pioneer:$junit_pioneer_version")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junit_version")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junit_version")
 }

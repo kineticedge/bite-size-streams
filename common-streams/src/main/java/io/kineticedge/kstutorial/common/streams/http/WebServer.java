@@ -1,5 +1,6 @@
 package io.kineticedge.kstutorial.common.streams.http;
 
+import io.kineticedge.kstutorial.common.config.ProducerConfig;
 import io.kineticedge.kstutorial.common.main.BaseTopologyBuilder;
 import io.kineticedge.kstutorial.common.streams.util.ClasspathStaticFileHandler;
 import io.kineticedge.kstutorial.producer.Emitter;
@@ -22,7 +23,7 @@ public class WebServer {
 
   private final com.sun.net.httpserver.HttpServer httpServer;
 
-  public WebServer(int port, String applicationId, Topology topology, KafkaStreams kafkaStreams, Map<String, String> metadata) throws IOException {
+  public WebServer(int port, String applicationId, Topology topology, KafkaStreams kafkaStreams, Map<String, String> metadata, final long lingerMs) throws IOException {
 
     httpServer = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress(InetAddress.getByName("0.0.0.0"), port), 100);
 
@@ -44,7 +45,7 @@ public class WebServer {
 
     httpServer.setExecutor(executor);
 
-    final Emitter emitter = new Emitter("localhost:9092");
+    final Emitter emitter = new Emitter("localhost:9092", lingerMs);
 
     httpServer.createContext("/static", new ClasspathStaticFileHandler());
     httpServer.createContext("/topology", new TopologyHandler(applicationId, topology));

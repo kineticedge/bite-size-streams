@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 
 /**
  * Returns the List of Processes Rooted at the parent and sorted by parent/child -- depth first
@@ -51,8 +52,17 @@ public class ProcessesHandler implements HttpHandler {
         processTree.computeIfAbsent(parentId, k -> new ArrayList<>()).add(process);
       }
 
-
       List<JsonNode> list = new ArrayList<>();
+
+      // HACK to get the "testing app", if it is running, to the top of the processor selection.
+      operatingSystem.getProcesses(osProcess -> osProcess.getName().contains("java") && osProcess.getArguments().contains("-Dapp.name=TESTING_APP"), null, 0)
+              .stream()
+              .findFirst().ifPresent(p -> {
+                  ObjectNode tesingApp = JsonUtil.objectMapper().createObjectNode();
+                  tesingApp.put("id", String.valueOf(p.getProcessID()));
+                  tesingApp.put("label", p.getProcessID() + ":TESTING_APP");
+                  list.add(tesingApp);
+              });
 
       ObjectNode node = JsonUtil.objectMapper().createObjectNode();
       node.put("id", String.valueOf(1));

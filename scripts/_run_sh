@@ -80,6 +80,11 @@ _run_sh() {
       local first_arg=${words[2]}
 
       case $prev in
+        --linger)
+          local -a thread_vals=( "0:no linger" "50:typical default, 50ms" )
+          _describe "Linger in milliseconds" thread_vals
+          return
+          ;;
         --num-threads)
           local -a thread_vals=( "1:Single thread" "2:Two threads" "4:Four threads" "8:Eight threads" )
           _describe "Thread count" thread_vals
@@ -130,6 +135,7 @@ _run_sh() {
 
     # Define all available options
     local -a all_opts=(
+      "--linger"
       "--num-threads"
       "--commit-interval"
       "--optimization"
@@ -180,6 +186,9 @@ _run_sh() {
     for opt in $all_opts; do
       if (( ! ${+used_options[$opt]} )); then
         case $opt in
+          --linger)
+            opts+=("$opt: linger (ms) of the publishing application")
+            ;;
           --num-threads)
             opts+=("$opt: Number of threads for the Kafka Streams application")
             ;;

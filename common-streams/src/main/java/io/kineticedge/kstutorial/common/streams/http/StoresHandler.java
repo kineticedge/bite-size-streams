@@ -13,6 +13,9 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StoreQueryParameters;
 import org.apache.kafka.streams.kstream.Windowed;
 import org.apache.kafka.streams.kstream.internals.SessionWindow;
+import org.apache.kafka.streams.query.RangeQuery;
+import org.apache.kafka.streams.query.StateQueryRequest;
+import org.apache.kafka.streams.query.StateQueryResult;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.QueryableStoreTypes;
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
@@ -201,7 +204,28 @@ public class StoresHandler implements HttpHandler {
       parameters = parameters.withPartition(partition);
     }
 
+//    RangeQuery<Object, Object> range = RangeQuery.withNoBounds();
+//    StoreQueryParameters<ReadOnlyKeyValueStore<String, Object>> params =
+//            StoreQueryParameters.fromNameAndType(store, QueryableStoreTypes.keyValueStore());
+//
+//    StateQueryRequest<ReadOnlyKeyValueStore<String, Object>> request =
+//            StateQueryRequest.with(params);
+//
+//    ReadOnlyKeyValueStore<String, Object> store =
+//            kafkaStreams.query(request);
+//
+//    StateQueryRequest.inStore(store).withQuery(range);
+//
+//    //StateQueryResult<?> result = kafkaStreams.query(StateQueryRequest.inStore(store).withQuery(null));
+//    ReadOnlyKeyValueStore<Object, Object> x = kafkaStreams.query(
+//            new StateQueryRequest<>(StoreQueryParameters.fromNameAndType(store, QueryableStoreTypes.keyValueStore()))
+//    ).getOnlyStore();
+//
+//  //  store.all().forEachRemaining(...);
+
+
     ReadOnlyKeyValueStore<String, Object> stateStore = kafkaStreams.store(parameters);
+
 
     try (OutputStream os = exchange.getResponseBody()) {
 

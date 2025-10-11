@@ -79,6 +79,9 @@ subprojects.filter { it.name != "metrics-reporter" }.forEach {
 
         implementation("org.slf4j:slf4j-api:$slf4j_version")
 
+        testImplementation("org.junit.jupiter:junit-jupiter-api:${junit_version}")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junit_version}")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:${junit_version}")
     }
 
     it.tasks.test {

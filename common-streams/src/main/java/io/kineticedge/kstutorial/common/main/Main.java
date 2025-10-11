@@ -162,9 +162,12 @@ public class Main {
 //    metadata.put("emitStrategy", topologyBuilder.emitStrategy().toString());
 //    metadata.put("windowConfig", topologyBuilder.windowConfig().toString());
 
-    final KafkaStreamsRunner runner = new KafkaStreamsRunner(topologyBuilder.applicationId(), topology, config, topologyBuilder.metadata());
+    final KafkaStreamsRunner runner = new KafkaStreamsRunner(topologyBuilder.applicationId(), topology, config, topologyBuilder.metadata(), options.lingerMs());
 
     runner.start();
+
+
+
 
 //    runner.getStreams()
 //    {

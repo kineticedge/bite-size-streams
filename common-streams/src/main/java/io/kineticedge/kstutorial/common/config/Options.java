@@ -21,6 +21,9 @@ public class Options extends BaseOptions {
   @Parameter(names = "--commit-interval")
   private Long commitInterval = 5_000L;
 
+  @Parameter(names = "--linger")
+  private Long lingerMs = 50L;
+
   @Parameter(names = "--optimization")
   private String optimization = StreamsConfig.NO_OPTIMIZATION;
 
@@ -78,4 +81,8 @@ public class Options extends BaseOptions {
     );
   }
 
+
+  public Long lingerMs() {
+    return lingerMs;
+  }
 }

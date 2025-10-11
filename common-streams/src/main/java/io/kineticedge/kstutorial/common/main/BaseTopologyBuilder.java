@@ -204,11 +204,11 @@ public abstract class BaseTopologyBuilder implements TopologyBuilder {
   }
 
   protected static String rectangleToString(Rectangle rectangle) {
-    return String.format("pos=(%d,%d) dimensions=%dx%d", rectangle.x(), rectangle.y(), rectangle.width(), rectangle.height());
+    return String.format("pos=(%d,%d) %dx%d", rectangle.x(), rectangle.y(), rectangle.width(), rectangle.height());
   }
 
   protected static String rectangleToString(OSWindow window) {
-    return String.format("pos=(%d,%d) dimensions=%dx%d", window.x(), window.y(), window.width(), window.height());
+    return String.format("@%d,%d+%dx%d", window.x(), window.y(), window.width(), window.height());
   }
 
   @SafeVarargs
