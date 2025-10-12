@@ -76,13 +76,15 @@ public class DurationParser {
       return "0s";
     }
 
-    long totalSeconds = duration.getSeconds();
-    boolean negative = totalSeconds < 0;
-    long abs = Math.abs(totalSeconds);
+    long totalMillis = duration.toMillis();
+    boolean negative = totalMillis < 0;
+    long abs = Math.abs(totalMillis);
 
-    long days = abs / 86_400; abs %= 86_400;
-    long hours = abs / 3_600; abs %= 3_600;
-    long minutes = abs / 60;  long seconds = abs % 60;
+    long days = abs / 86_400_000; abs %= 86_400_000;
+    long hours = abs / 3_600_000; abs %= 3_600_000;
+    long minutes = abs / 60_000; abs %= 60_000;
+    long seconds = abs / 1_000;
+    long millis = abs % 1_000;
 
     String formatted;
     if (days > 0) {
@@ -99,8 +101,14 @@ public class DurationParser {
               ? (minutes + "m")
               : String.format("%d:%02dm", minutes, seconds);
     } else {
-      // seconds only
-      formatted = seconds + "s";
+      // seconds with optional fractional part
+      if (millis == 0) {
+        formatted = seconds + "s";
+      } else if (seconds == 0) {
+        formatted = "0." + millis + "s";
+      } else {
+        formatted = String.format("%d.%03ds", seconds, millis).replaceAll("0+s$", "s");
+      }
     }
 
     return negative ? "-" + formatted : formatted;
