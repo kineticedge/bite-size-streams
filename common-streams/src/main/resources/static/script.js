@@ -158,6 +158,23 @@ function updateTable(data) {
         metadataTbody.appendChild(tr);
     });
 
+    const producerMetadataTbody = document.getElementById('producerMetadata')
+    producerMetadataTbody.innerHTML = '';
+    const pentries = Object.entries(data.producerMetadata ?? {});
+    // Optional: sort keys for stable order
+//    entries.sort(([a], [b]) => a.localeCompare(b));
+    pentries.forEach(([key, value]) => {
+        const tr = document.createElement('tr');
+        const tdKey = document.createElement('td');
+        tdKey.textContent = key;
+        const tdValue = document.createElement('td');
+        // For primitives and simple values
+        tdValue.textContent = value === null ? 'null' : String(value);
+        tr.appendChild(tdKey);
+        tr.appendChild(tdValue);
+        producerMetadataTbody.appendChild(tr);
+    });
+
 
     subtopologyTable.innerHTML = '';
     data.subtopology.forEach(subtopology => {

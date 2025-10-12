@@ -8,6 +8,7 @@ import org.apache.kafka.streams.kstream.EmitStrategy;
 import org.apache.kafka.streams.processor.PunctuationType;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.Optional;
 
 public class Options extends BaseOptions {
@@ -20,6 +21,9 @@ public class Options extends BaseOptions {
 
   @Parameter(names = "--commit-interval")
   private Long commitInterval = 5_000L;
+
+  @Parameter(names = "--task-max-idle")
+  private Long taskMaxIdle = null;
 
   @Parameter(names = "--linger")
   private Long lingerMs = 50L;
@@ -67,6 +71,7 @@ public class Options extends BaseOptions {
             Optional.ofNullable(numThreads),
             Optional.ofNullable(commitInterval),
             Optional.ofNullable(optimization),
+            Optional.ofNullable(taskMaxIdle),
             Optional.ofNullable(cachingDisabled),
             Optional.ofNullable(disableFeature),
             Optional.ofNullable(eosEnabled),
@@ -81,6 +86,16 @@ public class Options extends BaseOptions {
     );
   }
 
+  //    topologyConfig.taskMaxIdle().ifPresent(v -> {
+  //      Duration d = Duration.ofMillis(v);
+  //      map.put("taskMaxIdle", DurationParser.toString(d));
+  //    });
+
+  public Map<String, String> producerMetadata() {
+    return Map.ofEntries(
+            Map.entry("linger.ms", lingerMs.toString())
+    );
+  }
 
   public Long lingerMs() {
     return lingerMs;

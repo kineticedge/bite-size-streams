@@ -11,6 +11,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -26,8 +27,8 @@ public class Producer {
         kafkaProducer = new KafkaProducer<>(properties(options));
     }
 
-    public Producer(final String bootstrapServers,  final long lingerMs) {
-        kafkaProducer = new KafkaProducer<>(properties(bootstrapServers,  lingerMs));
+    public Producer(final String bootstrapServers,  final Map<String, String> producerMetadata) {
+        kafkaProducer = new KafkaProducer<>(properties(bootstrapServers,  producerMetadata));
     }
 
     public void flush() {
@@ -62,21 +63,23 @@ public class Producer {
 
 
     private Map<String, Object> properties(final Options options) {
-        return properties(options.bootstrapServers(), 50);
+        return properties(options.bootstrapServers(), Collections.emptyMap());
     }
 
-    private Map<String, Object> properties(final String bootstrapServers, final long lingerMs) {
+    private Map<String, Object> properties(final String bootstrapServers, final Map<String, String> producerMetadata) {
         Map<String, Object> defaults = Map.ofEntries(
                 Map.entry(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers),
                 Map.entry(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "PLAINTEXT"),
                 Map.entry(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName()),
                 Map.entry(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName()),
-                Map.entry(ProducerConfig.LINGER_MS_CONFIG, lingerMs),
+//                Map.entry(ProducerConfig.LINGER_MS_CONFIG, lingerMs),
                 Map.entry(ProducerConfig.BATCH_SIZE_CONFIG, 100_000),
                 Map.entry(ProducerConfig.ACKS_CONFIG, "all")
         );
 
         Map<String, Object> map = new HashMap<>(defaults);
+
+        map.putAll(producerMetadata);
 
         return map;
     }

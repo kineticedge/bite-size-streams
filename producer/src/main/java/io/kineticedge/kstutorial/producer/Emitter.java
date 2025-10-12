@@ -11,6 +11,7 @@ import oshi.SystemInfo;
 import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,8 +39,8 @@ public class Emitter {
     producer = new Producer(options);
   }
 
-  public Emitter(final String bootstrapServers, final long lingerMs) {
-    producer = new Producer(bootstrapServers, lingerMs);
+  public Emitter(final String bootstrapServers, final Map<String, String> producerMetadata) {
+    producer = new Producer(bootstrapServers, producerMetadata);
   }
 
   public void poisonPill() {
@@ -113,11 +114,11 @@ public class Emitter {
 
     if (includeProcessesDelayed()) {
       producer.flush();
-      try {
-        Thread.sleep(50L);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
+//      try {
+//        Thread.sleep(50L);
+//      } catch (InterruptedException e) {
+//        throw new RuntimeException(e);
+//      }
       proccesses.forEach(p -> producer.publish(Constants.PROCESSES, p, messageTimestamp(Constants.PROCESSES)));
     }
 

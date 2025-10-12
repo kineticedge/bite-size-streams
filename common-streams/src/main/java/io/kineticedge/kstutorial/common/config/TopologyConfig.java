@@ -9,6 +9,7 @@ public record TopologyConfig(
         Optional<Integer> numThreads,
         Optional<Long> commitInterval,
         Optional<String> optimization,
+        Optional<Long> taskMaxIdle,
         Optional<Boolean> cachingDisabled,
         Optional<Boolean> disableFeature,
         Optional<Boolean> eosEnabled,

@@ -144,6 +144,7 @@ function ws_updateEventSourceDialog(topic, e) {
         onMessage: (message) => {
             const data = JSON.parse(message);
             const newRow = document.createElement("tr");
+            newRow.className = "prevent-move";
             newRow.innerHTML = `
                     <td>${data.key}</td>
                     <td>${data.partition}</td>
@@ -164,6 +165,7 @@ function ws_updateEventSourceDialog(topic, e) {
                 //TODO make sure doesn't break
                 delete jsonObject._type;
 
+                newRow2.className = "prevent-move";
                 newRow2.innerHTML = `
                         <td colspan="5">
                           <pre class="json-newspaper">${customJsonStringify(jsonObject, 2)}</pre>
@@ -196,6 +198,7 @@ function ws_updateEventSourceDialog(topic, e) {
                 // `;
 
             } else if (data.datatype === "XML") {
+                newRow2.className = "prevent-move";
                 newRow2.innerHTML = `
                             <td colspan="5">
                               <pre class="xml-newspaper">${escapeXML(data.value)}</pre>
@@ -204,6 +207,7 @@ function ws_updateEventSourceDialog(topic, e) {
             } else {
                 console.log(">>");
                 console.log(`>> ${data.value}`)
+                newRow2.className = "prevent-move";
                 newRow2.innerHTML = `
                             <td colspan="5">
                               ${data.value}

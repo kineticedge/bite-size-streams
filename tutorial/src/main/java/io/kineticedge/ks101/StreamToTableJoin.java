@@ -29,7 +29,7 @@ public class StreamToTableJoin extends BaseTopologyBuilder {
 
   @Override
   public String applicationId() {
-    return "stream-to-table-join";
+    return "s-to-t-join";
   }
 
 

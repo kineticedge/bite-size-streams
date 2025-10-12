@@ -42,15 +42,15 @@ public class KafkaStreamsRunner {
 
   private KafkaStreams streams;
   private Map<String, String> metadata;
+  private Map<String, String> producerMetadata;
 
-  private long lingerMs;
 
-  public KafkaStreamsRunner(String applicationId, Topology topology, Map<String, Object> config, Map<String, String> metadata, long lingerMs) {
+  public KafkaStreamsRunner(String applicationId, Topology topology, Map<String, Object> config, Map<String, String> metadata, Map<String, String> producerMetadata) {
     this.applicationId = applicationId;
     this.topology = topology;
     this.config = config;
     this.metadata = metadata;
-    this.lingerMs = lingerMs;
+    this.producerMetadata = producerMetadata;
   }
 
   public KafkaStreams getStreams() {
@@ -156,7 +156,7 @@ public class KafkaStreamsRunner {
           //  misconfigure();
 
             try {
-              WebServer server = new WebServer(8080, applicationId, topology, streams, metadata, lingerMs);
+              WebServer server = new WebServer(8080, applicationId, topology, streams, metadata, producerMetadata);
               server.start();
             } catch (IOException e) {
               throw new RuntimeException(e);

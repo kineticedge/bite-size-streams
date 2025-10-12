@@ -23,7 +23,7 @@ public class WebServer {
 
   private final com.sun.net.httpserver.HttpServer httpServer;
 
-  public WebServer(int port, String applicationId, Topology topology, KafkaStreams kafkaStreams, Map<String, String> metadata, final long lingerMs) throws IOException {
+  public WebServer(int port, String applicationId, Topology topology, KafkaStreams kafkaStreams, Map<String, String> metadata, Map<String, String> producerMetadata) throws IOException {
 
     httpServer = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress(InetAddress.getByName("0.0.0.0"), port), 100);
 
@@ -45,14 +45,14 @@ public class WebServer {
 
     httpServer.setExecutor(executor);
 
-    final Emitter emitter = new Emitter("localhost:9092", lingerMs);
+    final Emitter emitter = new Emitter("localhost:9092", producerMetadata);
 
     httpServer.createContext("/static", new ClasspathStaticFileHandler());
     httpServer.createContext("/topology", new TopologyHandler(applicationId, topology));
     httpServer.createContext("/emit", new EmitHandler(emitter));
     httpServer.createContext("/check", new CheckHandler(emitter));
     httpServer.createContext("/processes", new ProcessesHandler());
-    httpServer.createContext("/threads", new ThreadsHandler(kafkaStreams, metadata));
+    httpServer.createContext("/threads", new ThreadsHandler(kafkaStreams, metadata, producerMetadata));
     httpServer.createContext("/stores", new StoresHandler(kafkaStreams));
     httpServer.createContext("/metrics", new MetricsHandler());
     httpServer.createContext("/metrics2", new MetricsHandler());

@@ -31,7 +31,22 @@
         <br/>
 <!--        <div><span style="color:blue;font-weight: bold;" id="applicationId"></span></div>-->
         <table class="ui-table2">
+            <thead>
+            <tr>
+                <th colspan="2">Stream Settings</th>
+            </tr>
+            </thead>
             <tbody id="metadata">
+            <!-- Rows will be dynamically populated here -->
+            </tbody>
+        </table>
+        <table class="ui-table2">
+            <thead>
+            <tr>
+                <th colspan="2">Producer Settings</th>
+            </tr>
+            </thead>
+            <tbody id="producerMetadata">
             <!-- Rows will be dynamically populated here -->
             </tbody>
         </table>
@@ -49,7 +64,7 @@
         <table id="commitTable" class="ui-table">
             <thead>
             <tr>
-                <th>thread</th>
+                <th>thrd</th>
                 <th>commit time &amp; tasks</th>
             </tr>
             </thead>

@@ -10,6 +10,7 @@ import org.apache.kafka.streams.KafkaStreams;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.LockSupport;
 
@@ -17,9 +18,12 @@ public class ThreadsHandler implements HttpHandler {
 
   private final KafkaStreams kafkaStreams;
   private final Map<String, String> metadata;
-  public ThreadsHandler(final KafkaStreams kafkaStreams, Map<String, String> metadata) {
+  private final Map<String, String> producerMetadata;
+
+  public ThreadsHandler(final KafkaStreams kafkaStreams, Map<String, String> metadata, Map<String, String> producerMetadata) {
     this.kafkaStreams = kafkaStreams;
     this.metadata = metadata;
+    this.producerMetadata = producerMetadata;
   }
 
   @Override
@@ -29,6 +33,7 @@ public class ThreadsHandler implements HttpHandler {
       exchange.getResponseHeaders().set("Cache-Control", "no-cache");
       exchange.getResponseHeaders().set("Connection", "keep-alive");
       exchange.sendResponseHeaders(200, 0);
+
 
       //applicationConfigs.getString("application.id");
       try (OutputStream os = exchange.getResponseBody()) {
@@ -40,7 +45,8 @@ public class ThreadsHandler implements HttpHandler {
                   StreamInternalsUtil.printApplicationId(kafkaStreams),
                   StreamInternalsUtil.monitorLastCommit(kafkaStreams),
                   StreamInternalsUtil.printStreamTimesBySubtopology(kafkaStreams),
-                  metadata
+                  metadata,
+                  producerMetadata
           );
           String data = "data: " + JsonUtil.objectMapper().writeValueAsString(streamInfo) + "\n\n";
           os.write(data.getBytes());

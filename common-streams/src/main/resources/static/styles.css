@@ -216,9 +216,16 @@
     width: 100%; /* or a specific width in pixels */
     /*border-collapse: collapse;*/
     border: 0px;
-    /*font-size: 32px;*/
+    font-size: 36px;
     padding-top: 10px;
     padding-bottom: 10px;
+}
+
+.ui-table2 thead th {
+    color: #666666;
+    font-size: smaller;
+    font-weight: bold;
+    text-align: left;
 }
 
 .ui-table2 td:first-child {

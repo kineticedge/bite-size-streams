@@ -64,6 +64,7 @@ function makeDialogDraggable(dialog) {
     // Make the entire dialog draggable (not just the header)
     let offsetX = 0, offsetY = 0;
     let isDragging = false;
+    let hasMoved = false;
 
     // Raise dialog on any click
     dialog.addEventListener("mousedown", (event) => {
@@ -72,16 +73,23 @@ function makeDialogDraggable(dialog) {
 
         // Skip dragging behavior if the target is a button or handle
         const target = event.target;
-        if (target.closest('.dialog-close-btn') ||
+        if (target.tagName === 'INPUT' ||
+            target.tagName === 'BUTTON' ||
+            target.tagName === 'PRE' ||
+            target.closest('.dialog-buttons') ||
+            target.closest('.dialog-close-btn') ||
             target.closest('.dialog-clear-btn') ||
             target.closest('.dialog-recycle-btn') ||
             target.closest('.dialog-handle') ||
-            target.closest('.dialog-corner')) {
+            target.closest('.dialog-corner') ||
+            target.closest('.prevent-move') ||
+            target.closest('.partition-selector')) {
             return;
         }
 
         event.preventDefault();
         isDragging = true;
+        hasMoved = false;
         offsetX = event.clientX - dialog.getBoundingClientRect().left;
         offsetY = event.clientY - dialog.getBoundingClientRect().top;
         document.addEventListener("mousemove", onMouseMove);

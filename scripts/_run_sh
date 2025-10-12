@@ -90,6 +90,11 @@ _run_sh() {
           _describe "Thread count" thread_vals
           return
           ;;
+        --task-max-idle)
+          local -a thread_vals=( "-1:no wait" "50:50ms" "1000:1s" "5000:5s" )
+          _describe "Task Max Idle" thread_vals
+          return
+          ;;
         --commit-interval)
           local -a interval_vals=( "100:Very frequent" "500:Frequent" "1000:Normal" "5000:Infrequent" )
           _describe "Commit interval (ms)" interval_vals
@@ -137,6 +142,7 @@ _run_sh() {
     local -a all_opts=(
       "--linger"
       "--num-threads"
+      "--task-max-idle"
       "--commit-interval"
       "--optimization"
       "--punctuation-type"
@@ -191,6 +197,9 @@ _run_sh() {
             ;;
           --num-threads)
             opts+=("$opt: Number of threads for the Kafka Streams application")
+            ;;
+          --task-max-idle)
+            opts+=("$opt: Task Max Idle (ms) for tasks")
             ;;
           --commit-interval)
             opts+=("$opt: Commit interval in milliseconds")

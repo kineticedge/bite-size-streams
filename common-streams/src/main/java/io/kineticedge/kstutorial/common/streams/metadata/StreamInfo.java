@@ -7,5 +7,6 @@ public record StreamInfo(
         String applicationId,
         List<ThreadInfo> thread,
         List<SubtopologyInfo> subtopology,
-        Map<String, String> metadata
+        Map<String, String> metadata,
+        Map<String, String> producerMetadata
 ) {}

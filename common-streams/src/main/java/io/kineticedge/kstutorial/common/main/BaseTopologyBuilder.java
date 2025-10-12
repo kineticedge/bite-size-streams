@@ -67,6 +67,7 @@ public abstract class BaseTopologyBuilder implements TopologyBuilder {
           // internal kafka consumer property to leave group immediately, helpful for testing kafka streams (and demos)
           Map.entry(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"),
 
+         // Map.entry(StreamsConfig.MAX_TASK_IDLE_MS_CONFIG, 10_000L),
 
 //          Map.entry(StreamsConfig.TASK_ASSIGNOR_CLASS_CONFIG, "io.kineticedge.ks.CustomTaskAssignor"),
 
@@ -88,6 +89,10 @@ public abstract class BaseTopologyBuilder implements TopologyBuilder {
     topologyConfig.numThreads().ifPresent(v -> map.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, v));
     topologyConfig.commitInterval().ifPresent(v -> map.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, v));
     topologyConfig.optimization().ifPresent(v -> map.put(StreamsConfig.TOPOLOGY_OPTIMIZATION_CONFIG, v));
+    topologyConfig.taskMaxIdle().ifPresent(v -> {
+      System.out.println("!!!>>> " + v);
+      map.put(StreamsConfig.MAX_TASK_IDLE_MS_CONFIG, v);
+    });
 
     topologyConfig.eosEnabled().ifPresent(v -> {
       if (v) {
@@ -95,6 +100,8 @@ public abstract class BaseTopologyBuilder implements TopologyBuilder {
         map.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE_V2);
       }
     });
+
+    System.out.println(map);
 
     return map;
   }
@@ -143,6 +150,10 @@ public abstract class BaseTopologyBuilder implements TopologyBuilder {
       map.put("commitInterval", DurationParser.toString(d));
     });
     topologyConfig.optimization().filter(v -> !"none".equals(v)).ifPresent(v -> map.put("optimization", v));
+    topologyConfig.taskMaxIdle().ifPresent(v -> {
+      Duration d = Duration.ofMillis(v);
+      map.put("taskMaxIdle", DurationParser.toString(d));
+    });
     topologyConfig.eosEnabled().filter(v -> v).ifPresent(v -> map.put("eos", "enabled"));
 
     return map;
