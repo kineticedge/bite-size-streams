@@ -18,6 +18,7 @@ import org.apache.kafka.common.serialization.LongDeserializer;
 import org.java_websocket.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.helpers.AttributesImpl;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -37,6 +38,8 @@ public class EventsHandler  {
   private static final String BOOTSTRAP_SERVERS = "localhost:9092";
 
   private static final Logger log = LoggerFactory.getLogger(EventsHandler.class);
+
+  private static final LongDeserializer deserializer = new LongDeserializer();
 
   private final WebSocket webSocket;
 
@@ -163,11 +166,18 @@ public class EventsHandler  {
 
           String key = record.key() != null ? MagicKeyParser.parse(record.key()) : "<em>null</em>";
 
+          long timestamp = -1;
+          byte[] ts = record.headers().lastHeader("ts").value();
+          if (ts != null) {
+            timestamp = deserializer.deserialize(null, ts);
+          }
+
           Map<String, Object> data = Map.ofEntries(
                   Map.entry("key", key),
                   Map.entry("partition", record.partition()),
                   Map.entry("offset", record.offset()),
                   Map.entry("timestamp", record.timestamp()),
+                  Map.entry("ptimestamp", timestamp),
                   Map.entry("datatype", datatype),
                   Map.entry("type", type),
                   //Map.entry("value", MapUtil.removeKeyRecursively(value, "_type"))

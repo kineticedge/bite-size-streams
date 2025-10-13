@@ -149,7 +149,7 @@ function ws_updateEventSourceDialog(topic, e) {
                     <td>${data.key}</td>
                     <td>${data.partition}</td>
                     <td>${data.offset}</td>
-                    <td>${formatISODate(new Date(data.timestamp).toISOString())}</td>
+                    <td class="timestamp-cell" data-ptimestamp="${formatISODate(new Date(data.ptimestamp).toISOString())}">${formatISODate(new Date(data.timestamp).toISOString())}</td>
                     <td>${data.type}</td>
                 `;
             const newRow2 = document.createElement("tr");

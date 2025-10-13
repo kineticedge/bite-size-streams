@@ -152,8 +152,9 @@ public class KafkaStreamsRunner {
 
           if (first.compareAndSet(false, true)) {
 
-            System.out.println("FIRST TO RUNNING __ TODO");
-          //  misconfigure();
+            log.info("Kafka Streams is running state, can initialize WebServer.");
+
+            //  misconfigure();
 
             try {
               WebServer server = new WebServer(8080, applicationId, topology, streams, metadata, producerMetadata);
@@ -165,38 +166,31 @@ public class KafkaStreamsRunner {
             SimpleWebSocketServer wsServer = new SimpleWebSocketServer(8081);
             wsServer.start();
 
-            System.out.println("STARTED");
+            log.info("Kafka Streams is running");
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-              System.out.println("SHUTTING DOWN");
+              log.info("Kafka Streams is shutting down");
               try {
                 wsServer.stop();
-                //server.stop(5000, "CLOSING!");
               } catch (InterruptedException e) {
                 throw new RuntimeException(e);
               }
             }));
-
-
           }
 
-          System.out.println("________");
           streams.metadataForLocalThreads().stream().forEach(s -> {
             s.activeTasks().stream().forEach(t -> {
               t.topicPartitions().stream().forEach(tp -> {
-                System.out.println(tp);
+                log.info(tp.topic());
               });
             });
           });
-          System.out.println("________");
 
-          System.out.println("x________");
           streams.metadataForAllStreamsClients().stream().forEach(s -> {
             s.topicPartitions().stream().forEach(tp -> {
-              System.out.println(tp);
+              log.info(tp.toString());
             });
           });
-          System.out.println("x________");
         }
     });
 

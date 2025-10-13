@@ -2,6 +2,7 @@ package io.kineticedge.kstutorial.common.main;
 
 import io.kineticedge.kstutorial.common.config.TopologyConfig;
 import io.kineticedge.kstutorial.common.config.WindowConfig;
+import io.kineticedge.kstutorial.common.interceptors.TsProducerInterceptor;
 import io.kineticedge.kstutorial.common.serde.JsonSerde;
 import io.kineticedge.kstutorial.common.streams.SimpleProcessingExceptionHandler;
 import io.kineticedge.kstutorial.common.streams.ThrottlingDeserializationExceptionHandler;
@@ -71,6 +72,8 @@ public abstract class BaseTopologyBuilder implements TopologyBuilder {
 
 //          Map.entry(StreamsConfig.TASK_ASSIGNOR_CLASS_CONFIG, "io.kineticedge.ks.CustomTaskAssignor"),
 
+          Map.entry(StreamsConfig.producerPrefix(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG), TsProducerInterceptor.class.getName()),
+
           Map.entry("internal.leave.group.on.close", true)
   );
 
@@ -90,7 +93,6 @@ public abstract class BaseTopologyBuilder implements TopologyBuilder {
     topologyConfig.commitInterval().ifPresent(v -> map.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, v));
     topologyConfig.optimization().ifPresent(v -> map.put(StreamsConfig.TOPOLOGY_OPTIMIZATION_CONFIG, v));
     topologyConfig.taskMaxIdle().ifPresent(v -> {
-      System.out.println("!!!>>> " + v);
       map.put(StreamsConfig.MAX_TASK_IDLE_MS_CONFIG, v);
     });
 
@@ -101,7 +103,7 @@ public abstract class BaseTopologyBuilder implements TopologyBuilder {
       }
     });
 
-    System.out.println(map);
+    log.info("Configuration:\n{}", map);
 
     return map;
   }

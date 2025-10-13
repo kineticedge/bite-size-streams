@@ -23,6 +23,8 @@ public class WebServer {
 
   private final com.sun.net.httpserver.HttpServer httpServer;
 
+  private final ScheduledExecutorService monitor = Executors.newScheduledThreadPool(1);
+
   public WebServer(int port, String applicationId, Topology topology, KafkaStreams kafkaStreams, Map<String, String> metadata, Map<String, String> producerMetadata) throws IOException {
 
     httpServer = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress(InetAddress.getByName("0.0.0.0"), port), 100);
@@ -33,13 +35,15 @@ public class WebServer {
             Executors.defaultThreadFactory(),
             new ThreadPoolExecutor.CallerRunsPolicy());
 
-    ScheduledExecutorService monitor = Executors.newScheduledThreadPool(1);
     monitor.scheduleAtFixedRate(() -> {
-      System.out.println("Active threads: " + executor.getActiveCount());
-      System.out.println("Pool size: " + executor.getPoolSize());
-      System.out.println("Task count: " + executor.getTaskCount());
-      System.out.println("Completed tasks: " + executor.getCompletedTaskCount());
-      System.out.println("Queue size: " + executor.getQueue().size());
+      log.info(
+              "Thread stats\nActive threads: {}\nPool size: {}\nTask count: {}\nCompleted tasks: {}\nQueue size: {}\n",
+              executor.getActiveCount(),
+              executor.getPoolSize(),
+              executor.getTaskCount(),
+              executor.getCompletedTaskCount(),
+              executor.getQueue().size()
+      );
     }, 0, 60, TimeUnit.SECONDS);
 
 
@@ -62,11 +66,50 @@ public class WebServer {
 
   public void start() {
     httpServer.start();
-    log.info("Http Server started at: " + httpServer.getAddress());
+    log.info("Http Server started at: {}", httpServer.getAddress());
+
+    openBrowser("http://localhost:" + httpServer.getAddress().getPort() + "/static/index.html");
   }
 
   public void stop() {
+    monitor.shutdown();
     httpServer.stop(0);
   }
+
+
+  private void openBrowser(String url) {
+    try {
+      String os = System.getProperty("os.name").toLowerCase();
+
+      if (os.contains("mac")) {
+        // macOS: use AppleScript to reuse a named window
+        String script = String.format(
+                "tell application \"Google Chrome\"\n" +
+                        "  set windowFound to false\n" +
+                        "  repeat with w in windows\n" +
+                        "    repeat with t in tabs of w\n" +
+                        "      if URL of t starts with \"http://localhost:%d\" then\n" +
+                        "        set URL of t to \"%s\"\n" +
+                        "        set active tab index of w to (index of t)\n" +
+                        "        set index of w to 1\n" +
+                        "        set windowFound to true\n" +
+                        "        exit repeat\n" +
+                        "      end if\n" +
+                        "    end repeat\n" +
+                        "    if windowFound then exit repeat\n" +
+                        "  end repeat\n" +
+                        "  if not windowFound then\n" +
+                        "    tell window 1 to make new tab with properties {URL:\"%s\"}\n" +
+                        "  end if\n" +
+                        "  activate\n" +
+                        "end tell", httpServer.getAddress().getPort(), url, url);
+        new ProcessBuilder("osascript", "-e", script).start();
+      }
+      log.info("Browser opened/navigated to: {}", url);
+    } catch (Exception e) {
+      log.warn("Could not open browser automatically: {}", e.getMessage());
+    }
+  }
+
 
 }

@@ -1,5 +1,6 @@
 package io.kineticedge.kstutorial.producer;
 
+import io.kineticedge.kstutorial.common.interceptors.TsProducerInterceptor;
 import io.kineticedge.kstutorial.common.serde.JsonSerializer;
 import io.kineticedge.kstutorial.domain.Id;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -74,6 +75,7 @@ public class Producer {
                 Map.entry(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName()),
 //                Map.entry(ProducerConfig.LINGER_MS_CONFIG, lingerMs),
                 Map.entry(ProducerConfig.BATCH_SIZE_CONFIG, 100_000),
+                Map.entry(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, TsProducerInterceptor.class.getName()),
                 Map.entry(ProducerConfig.ACKS_CONFIG, "all")
         );
 

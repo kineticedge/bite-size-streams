@@ -114,6 +114,15 @@ public class Emitter {
 
     if (includeProcessesDelayed()) {
       producer.flush();
+
+      if (age > 0) {
+        try {
+          Thread.sleep(20L);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
 //      try {
 //        Thread.sleep(50L);
 //      } catch (InterruptedException e) {
@@ -151,6 +160,9 @@ public class Emitter {
 //  }
 
   private long messageTimestamp(final String topic) {
+    if ("processes-delayed".equals(types)) {
+      return System.currentTimeMillis();
+    }
 //    if ("processes-delayed".equals(types) && Constants.PROCESSES.equals(topic)) {
 //      // process gets current time, all other topics are aged accordingly.
 //      return System.currentTimeMillis();

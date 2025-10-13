@@ -409,3 +409,25 @@
     display: flex;
     align-items: center;
 }
+
+
+.timestamp-cell {
+    position: relative;
+    cursor: help;
+}
+
+.timestamp-cell:hover::after {
+    content: attr(data-ptimestamp);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    /*font-size: 12px;*/
+    z-index: 1000;
+    margin-bottom: 4px;
+}
