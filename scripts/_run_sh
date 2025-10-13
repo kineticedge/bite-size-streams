@@ -169,6 +169,12 @@ _run_sh() {
         )
     fi
 
+    if [[ "$first_arg" =~ "VersionedStore" ]]; then
+        all_opts+=(
+          "--retention"
+        )
+    fi
+
     #echo ${all_opts[@]}
 
     # Track which options have already been used

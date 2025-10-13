@@ -53,8 +53,8 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 800px;
-    height: 600px;
+    width: 650px;
+    height: 420px;
     background-color: white;
     border: 1px solid black;
     /*flex-direction: column;*/

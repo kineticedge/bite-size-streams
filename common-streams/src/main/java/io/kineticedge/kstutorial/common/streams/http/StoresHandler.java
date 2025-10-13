@@ -22,6 +22,8 @@ import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.apache.kafka.streams.state.ReadOnlySessionStore;
 import org.apache.kafka.streams.state.ReadOnlyWindowStore;
 import org.apache.kafka.streams.state.ValueAndTimestamp;
+import org.apache.kafka.streams.state.VersionedKeyValueStore;
+import org.apache.kafka.streams.state.VersionedRecord;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,6 +31,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.Set;
 
 public class StoresHandler implements HttpHandler {
 
@@ -67,6 +70,7 @@ public class StoresHandler implements HttpHandler {
       case TIMESTAMPED_KEYVALUE -> timestampedKeyvalue(exchange, store, partition);
       case TIMESTAMPED_KEYVALUE_BYTESKEY -> timestampedKeyvalueFK(exchange, store, partition);
       case KEYVALUE -> keyvalue(exchange, store, partition);
+      case VERSIONED_KEYVALUE -> versionedKeyvalue(exchange, store, partition);
       default -> {
         System.out.println(">>>>!!!!>>> " + type);
         exchange.close();
@@ -239,6 +243,105 @@ public class StoresHandler implements HttpHandler {
                   //Map.entry("timestamp", 0),
                   Map.entry("value", output.getLeft()),
                   Map.entry("type", output.getRight())
+          );
+
+          os.write(JsonUtil.objectMapper().writeValueAsBytes(record));
+
+          if (storeIterator.hasNext()) {
+            os.write(",".getBytes());
+          }
+        }
+      } catch (Exception e) {
+        log.error("unable to parse", e);
+      }
+      os.write("]".getBytes());
+    } finally {
+      exchange.close();
+    }
+  }
+
+  private void versionedKeyvalue(HttpExchange exchange, String store, Integer partition) throws IOException {
+
+    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>");
+
+    // Create a range query for versioned store
+    org.apache.kafka.streams.query.RangeQuery<String, VersionedRecord<Object>> rangeQuery =
+            org.apache.kafka.streams.query.RangeQuery.withNoBounds();
+
+    // Build the state query request
+    StateQueryRequest<KeyValueIterator<String, VersionedRecord<Object>>> request =
+            StateQueryRequest.inStore(store)
+                    .withQuery(rangeQuery);
+
+    if (partition != null) {
+      request = request.withPartitions(Set.of(partition));
+    }
+
+    // Execute the query
+    StateQueryResult<KeyValueIterator<String, VersionedRecord<Object>>> result =
+            kafkaStreams.query(request);
+
+    System.out.println("(((");
+    System.out.println(result);
+//    System.out.println(result.getGlobalResult().getResult().hasNext());
+
+    System.out.println(">>>");
+//
+//    StoreQueryParameters<ReadOnlyKeyValueStore<String, Object>> parameters = StoreQueryParameters.fromNameAndType(store, QueryableStoreTypes.v());
+//    if (partition != null) {
+//      log.debug("getting state store {} partition {}", store, partition);
+//      parameters = parameters.withPartition(partition);
+//    }
+
+//    try (VersionedKeyValueStore.KeyQuery<String, String> query = versionedStore.query()) {
+//      try (KeyValueIterator<K, VersionedRecord<V>> iterator = query.all()) {
+//        while (iterator.hasNext()) {
+//          KeyValue<K, VersionedRecord<V>> entry = iterator.next();
+//          K key = entry.key;
+//          V value = entry.value.value(); // latest value
+//          long timestamp = entry.value.timestamp();
+//
+//          System.out.println("Key: " + key + ", Value: " + value + ", Timestamp: " + timestamp);
+//        }
+//      }
+//    }
+
+//    RangeQuery<Object, Object> range = RangeQuery.withNoBounds();
+//    StoreQueryParameters<ReadOnlyKeyValueStore<String, Object>> params =
+//            StoreQueryParameters.fromNameAndType(store, QueryableStoreTypes.keyValueStore());
+//
+//    StateQueryRequest<ReadOnlyKeyValueStore<String, Object>> request =
+//            StateQueryRequest.with(params);
+//
+//    ReadOnlyKeyValueStore<String, Object> store =
+//            kafkaStreams.query(request);
+//
+//    StateQueryRequest.inStore(store).withQuery(range);
+//
+//    //StateQueryResult<?> result = kafkaStreams.query(StateQueryRequest.inStore(store).withQuery(null));
+//    ReadOnlyKeyValueStore<Object, Object> x = kafkaStreams.query(
+//            new StateQueryRequest<>(StoreQueryParameters.fromNameAndType(store, QueryableStoreTypes.keyValueStore()))
+//    ).getOnlyStore();
+//
+//  //  store.all().forEachRemaining(...);
+
+
+//    ReadOnlyKeyValueStore<String, Object> stateStore = kafkaStreams.store(parameters);
+
+
+    try (OutputStream os = exchange.getResponseBody()) {
+
+      os.write("[".getBytes());
+      try (KeyValueIterator<String, VersionedRecord<Object>> storeIterator = result.getPartitionResults().get(0).getResult()) {
+        while (storeIterator.hasNext()) {
+          var entry = storeIterator.next();
+          final Pair<Object, String> output = convert(entry.value.value());
+          final Map<String, Object> record = Map.ofEntries(
+                  Map.entry("key", entry.key),
+                  //Map.entry("timestamp", 0),
+                  Map.entry("value", output.getLeft()),
+                  Map.entry("type", output.getRight()),
+                  Map.entry("timestamp", entry.value.timestamp())
           );
 
           os.write(JsonUtil.objectMapper().writeValueAsBytes(record));

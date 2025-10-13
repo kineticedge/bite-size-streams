@@ -2,12 +2,14 @@ package io.kineticedge.kstutorial.common.streams.metadata;
 
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.VersionedKeyValueStore;
+import org.apache.kafka.streams.state.internals.VersionedKeyValueStoreBuilder;
 
 import java.util.Map;
 
 public class RangeQueryableVersionedStoreBuilder<K, V> implements StoreBuilder<VersionedKeyValueStore<K, V>> {
 
   private final StoreBuilder<VersionedKeyValueStore<K, V>> innerBuilder;
+
 
   public RangeQueryableVersionedStoreBuilder(StoreBuilder<VersionedKeyValueStore<K, V>> innerBuilder) {
     this.innerBuilder = innerBuilder;
@@ -41,7 +43,13 @@ public class RangeQueryableVersionedStoreBuilder<K, V> implements StoreBuilder<V
   @Override
   public VersionedKeyValueStore<K, V> build() {
     VersionedKeyValueStore<K, V> original = innerBuilder.build();
-    return new RangeQueryableVersionedStore<>(original); // your IQv2-enabled wrapper
+
+    long retention = -1;
+    if (innerBuilder instanceof VersionedKeyValueStoreBuilder<K,V> vkvsb) {
+      retention = vkvsb.historyRetention();
+    }
+
+    return new RangeQueryableVersionedStore<>(original, retention); // your IQv2-enabled wrapper
   }
 
   @Override

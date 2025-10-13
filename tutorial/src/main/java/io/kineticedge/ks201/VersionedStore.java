@@ -83,9 +83,19 @@ public class VersionedStore extends BaseTopologyBuilder {
             .to(OUTPUT_TOPIC, Produced.<String, String>as("output-sink").withValueSerde(Serdes.String()));
   }
 
+  private static String asString(OSWindow window, OSProcess process) {
+    return "pId=" + process.processId() + "(" + process.iteration() + "), wId=" + window.windowId() + "(" + window.iteration() + ") " + rectangleToString(window);
+  }
+
   private static String asString(FixedKeyRecord<String, OSWindow> r, VersionedRecord<OSProcess> vr) {
-    return String.format("windowId=%s, processName=%s, uptime=%s",
-            r.value().windowId(), vr.value().name(), vr.value().upTime());
+
+    //r.timestamp();
+    //vr.timestamp();
+
+    return "pId=" + vr.value().processId() + "(" + vr.value().iteration() + "), wId=" + r.value().windowId() + "(" + r.value().iteration() + ") " + rectangleToString(r.value());
+
+//    return String.format("windowId=%s, processName=%s, uptime=%s",
+//            r.value().windowId(), vr.value().name(), vr.value().upTime());
   }
 
   @Override
