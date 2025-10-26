@@ -64,10 +64,15 @@ public class StreamToTableJoin extends BaseTopologyBuilder {
             );
   }
 
-  private static String asString(OSWindow window, OSProcess process) {
-    return "pId=" + process.processId() + "(" + process.iteration() + "), wId=" + window.windowId() + "(" + window.iteration() + ") " + rectangleToString(window);
+  private static String asString(OSWindow w, OSProcess p) {
+    return String.format("pId=%d(%d), wId=%d(%d) %s",
+            p.processId(),
+            p.iteration(),
+            w.windowId(),
+            w.iteration(),
+            rectangleToString(w)
+    );
   }
-
 
   @Override
   public List<String> topics() {

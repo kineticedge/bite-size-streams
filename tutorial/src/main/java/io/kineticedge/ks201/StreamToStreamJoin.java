@@ -73,6 +73,8 @@ public class StreamToStreamJoin extends BaseTopologyBuilder {
               ObjectNode node = JsonNodeFactory.instance.objectNode();
               node.put("pId", p.id());
               node.put("wId", w.id());
+              node.put("pIterator", p.iteration());
+              node.put("wIterator", w.iteration());
               node.put("pName", p.name());
               node.put("difference", getDifference(p, w));
               return node;
