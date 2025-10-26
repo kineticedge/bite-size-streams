@@ -113,7 +113,11 @@ public abstract class BaseTopologyBuilder implements TopologyBuilder {
     return topologyConfig.cachingDisabled().orElse(false);
   }
 
-  public boolean isFeatureDisabled() {
+    public String optimation() {
+        return topologyConfig.optimization().orElse("");
+    }
+
+    public boolean isFeatureDisabled() {
     return topologyConfig.disableFeature().orElse(false);
   }
 

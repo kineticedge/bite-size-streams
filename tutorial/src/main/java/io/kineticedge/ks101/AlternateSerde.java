@@ -28,7 +28,7 @@ public class AlternateSerde extends BaseTopologyBuilder {
 
   @Override
   public String applicationId() {
-    return "alternate-serde";
+    return "alt-serde";
   }
 
 

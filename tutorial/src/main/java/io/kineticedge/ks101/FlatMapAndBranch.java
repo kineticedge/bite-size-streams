@@ -24,7 +24,7 @@ public class FlatMapAndBranch extends BaseTopologyBuilder {
 
   @Override
   public String applicationId() {
-    return "flatmap-and-branch";
+    return "flatmap-and-br";
   }
 
   @Override
