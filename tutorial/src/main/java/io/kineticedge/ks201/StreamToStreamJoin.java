@@ -39,9 +39,8 @@ public class StreamToStreamJoin extends BaseTopologyBuilder {
   @Override
   public Map<String, String> metadata() {
 
-    return map(
+    return map(coreMetadata(),
             Map.entry("caching", isCachingDisabled() ? "disabled" : "enabled"),
-            Map.entry("feature", isFeatureDisabled() ? "disabled" : "enabled"),
             Map.entry("window-size", DurationParser.toString(windowConfig().size().orElse(Duration.ofSeconds(5L)))),
             Map.entry("window-grace", DurationParser.toString(windowConfig().size().orElse(Duration.ofSeconds(1L))))
     );

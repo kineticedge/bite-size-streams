@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 public class TableToTableJoin2 extends BaseTopologyBuilder {
@@ -29,10 +30,16 @@ public class TableToTableJoin2 extends BaseTopologyBuilder {
 
   @Override
   public String applicationId() {
-    return "table-to-table-join-2";
+    return "t-to-t-join-2";
   }
 
-  @Override
+    @Override
+    public Map<String, String> metadata() {
+        return map(coreMetadata(),
+                Map.entry("caching", isCachingDisabled() ? "disabled" : "enabled")        );
+    }
+
+    @Override
   protected void build(StreamsBuilder builder) {
 
 
@@ -62,6 +69,7 @@ public class TableToTableJoin2 extends BaseTopologyBuilder {
                       a.addWindow(v);
                       return a;
                     },
+                    Named.as("aggregate"),
                     wMaterialized
             );
 

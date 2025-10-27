@@ -2,6 +2,7 @@ package io.kineticedge.ks201;
 
 import io.kineticedge.kstutorial.common.Constants;
 import io.kineticedge.kstutorial.common.main.BaseTopologyBuilder;
+import io.kineticedge.kstutorial.common.streams.util.DurationParser;
 import io.kineticedge.kstutorial.domain.OSWindow;
 import io.kineticedge.kstutorial.domain.OSWindowAggregate;
 import io.kineticedge.kstutorial.domain.OSWindowPositions;
@@ -21,23 +22,39 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 public class SessionWindow extends BaseTopologyBuilder {
 
   private static final Logger log = LoggerFactory.getLogger(SessionWindow.class);
 
-  private static final String OUTPUT_TOPIC = "window-positions";
+  private static final String OUTPUT_TOPIC = "window-pos";
 
   @Override
   public String applicationId() {
     return "session-window";
-  }
+  }    @Override
+    public Map<String, String> metadata() {
 
-  @Override
+        final Duration size = windowConfig().size().orElse(Duration.ofSeconds(10L));
+        final Duration grace = windowConfig().grace().orElse(Duration.ofSeconds(1L));
+
+        return map(coreMetadata(),
+                Map.entry("caching", isCachingDisabled() ? "disabled" : "enabled"),
+                Map.entry("window-size", DurationParser.toString(size)),
+                Map.entry("window-grace", DurationParser.toString(grace))
+        );
+    }
+
+
+
+    @Override
   public List<String> topics() {
     return List.of(OUTPUT_TOPIC);
   }
+
+
   @Override
   protected void build(StreamsBuilder builder) {
 

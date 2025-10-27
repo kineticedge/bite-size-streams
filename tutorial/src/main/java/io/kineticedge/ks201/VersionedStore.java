@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @SuppressWarnings("unused")
@@ -40,7 +41,13 @@ public class VersionedStore extends BaseTopologyBuilder {
     return "versioned-store";
   }
 
-  @Override
+    @Override
+    public Map<String, String> metadata() {
+        return map(coreMetadata(),
+                Map.entry("caching", isCachingDisabled() ? "disabled" : "enabled")        );
+    }
+
+    @Override
   protected void build(StreamsBuilder builder) {
 
     KStream<String, OSProcess> processes = builder
