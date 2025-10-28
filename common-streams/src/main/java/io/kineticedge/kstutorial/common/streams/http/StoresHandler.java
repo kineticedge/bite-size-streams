@@ -486,7 +486,14 @@ public class StoresHandler implements HttpHandler {
     }
 
     try {
-      final Map<String, Object> output = JsonUtil.objectMapper().convertValue(object, MAP_TYPE_REFERENCE);
+//        System.out.println(object.getClass().getSimpleName());
+//        System.out.println(new String((byte[]) object));
+//        System.out.println("***");
+
+        final Map<String, Object> output = (object instanceof byte[]) ? JsonUtil.objectMapper().readValue(((byte[]) object), MAP_TYPE_REFERENCE) : JsonUtil.objectMapper().convertValue(object, MAP_TYPE_REFERENCE);
+
+      //Map<String, Object> output = JsonUtil.objectMapper().convertValue(object, MAP_TYPE_REFERENCE);
+      //Map<String, Object> output = JsonUtil.objectMapper().readValue(((byte[]) object), MAP_TYPE_REFERENCE);
 
       String type = (String) output.get("_type");
       type = type.substring(type.lastIndexOf('.') + 1);
@@ -495,6 +502,12 @@ public class StoresHandler implements HttpHandler {
 
       return Pair.of(output, type);
     } catch (Exception e) {
+
+        e.printStackTrace();
+
+        if (object instanceof byte[] bytes) {
+            return Pair.of(new String(bytes), object.getClass().getSimpleName());
+        }
       return Pair.of(object.toString(), object.getClass().getSimpleName());
     }
   }

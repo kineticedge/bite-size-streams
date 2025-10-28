@@ -189,6 +189,7 @@ public class StoreTypeChecker {
           }
         }
       } catch (Exception e) {
+          log.error("Error getting store providers", e);
       }
 
       try {
@@ -216,9 +217,10 @@ public class StoreTypeChecker {
       } catch (Exception e) {
       }
 
-      log.info("ASSUMING VERSIONED KEYVALUE");
-      log.info("ASSUMING VERSIONED KEYVALUE");
+      log.info("*********** ASSUMING VERSIONED KEYVALUE");
       return StateStoreType.VERSIONED_KEYVALUE;
+//      return StateStoreType.TIMESTAMPED_KEYVALUE;
+//      return StateStoreType.TIMESTAMPED_KEYVALUE;
 
     } catch (Exception e) {
       return StateStoreType.NA;
