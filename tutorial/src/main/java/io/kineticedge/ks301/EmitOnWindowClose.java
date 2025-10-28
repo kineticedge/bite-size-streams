@@ -3,6 +3,7 @@ package io.kineticedge.ks301;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.kineticedge.kstutorial.common.Constants;
 import io.kineticedge.kstutorial.common.main.BaseTopologyBuilder;
+import io.kineticedge.kstutorial.common.streams.util.DurationParser;
 import io.kineticedge.kstutorial.common.streams.util.FixedKeyRecordFactory;
 import io.kineticedge.kstutorial.domain.OSProcess;
 import io.kineticedge.kstutorial.domain.OSProcessCount;
@@ -40,12 +41,16 @@ public class EmitOnWindowClose extends BaseTopologyBuilder {
 
   private static final String OUTPUT_TOPIC = "emit-on-window-close-output";
 
+  private Duration size = Duration.ofSeconds(5L);
+  private Duration grace = Duration.ofSeconds(1L);
+
   @Override
   public Map<String, String> metadata() {
-    return map(
+    return map(coreMetadata(),
             Map.entry("caching", isCachingDisabled() ? "disabled" : "enabled"),
-            Map.entry("feature", isFeatureDisabled() ? "disabled" : "enabled"),
-            Map.entry("emit", emitStrategyType().name())
+            Map.entry("emit", emitStrategyType().name()),
+            Map.entry("window-size", DurationParser.toString(size)),
+            Map.entry("window-grace", DurationParser.toString(grace))
     );
   }
 
@@ -72,7 +77,7 @@ public class EmitOnWindowClose extends BaseTopologyBuilder {
     builder.<String, OSProcess>stream(Constants.PROCESSES, Consumed.as("processes-source"))
             .peek(EmitOnWindowClose::print, Named.as("peek"))
             .groupByKey(Grouped.as("group-by-key"))
-            .windowedBy(SessionWindows.ofInactivityGapAndGrace(Duration.ofSeconds(5L), Duration.ofSeconds(1L)))
+            .windowedBy(SessionWindows.ofInactivityGapAndGrace(size, grace))
             .emitStrategy(emitStrategy())
             .aggregate(
                     () -> null,

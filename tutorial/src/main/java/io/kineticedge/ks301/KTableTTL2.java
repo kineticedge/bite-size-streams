@@ -2,6 +2,7 @@ package io.kineticedge.ks301;
 
 import io.kineticedge.kstutorial.common.Constants;
 import io.kineticedge.kstutorial.common.main.BaseTopologyBuilder;
+import io.kineticedge.kstutorial.common.streams.util.DurationParser;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 public class KTableTTL2 extends BaseTopologyBuilder {
@@ -44,6 +46,19 @@ public class KTableTTL2 extends BaseTopologyBuilder {
   public String applicationId() {
     return "table-ttl-2";
   }
+
+    @Override
+    public Map<String, String> metadata() {
+
+        String ttlBasedOn = isFeatureEnabled() ? "stream-time" : "system-time";
+
+        return map(coreMetadata(),
+                Map.entry("caching", isCachingDisabled() ? "disabled" : "enabled"),
+                Map.entry("punctuation", punctuationType().name().toLowerCase()),
+                Map.entry("TTL age on", ttlBasedOn),
+                Map.entry("TTL", DurationParser.toString(Duration.ofMillis(TTL)))
+        );
+    }
 
   @Override
   protected void build(StreamsBuilder builder) {

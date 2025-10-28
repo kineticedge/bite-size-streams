@@ -2,6 +2,7 @@ package io.kineticedge.ks201;
 
 import io.kineticedge.kstutorial.common.Constants;
 import io.kineticedge.kstutorial.common.main.BaseTopologyBuilder;
+import io.kineticedge.kstutorial.common.streams.util.DurationParser;
 import io.kineticedge.kstutorial.domain.OSProcess;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KeyValue;
@@ -35,7 +36,7 @@ public class KTableTTL extends BaseTopologyBuilder {
 
   private static final Duration PUNCTUATE_INTERVAL = Duration.ofSeconds(5L);
   private static final long MAX_PUNCTUATE_TIME = 500L;
-  private static final long MAX_TIME_TO_LIVE = 10_000L;
+  private static final long MAX_TIME_TO_LIVE = 2_000L;
 
   @Override
   public String applicationId() {
@@ -50,7 +51,8 @@ public class KTableTTL extends BaseTopologyBuilder {
     return map(coreMetadata(),
             Map.entry("caching", isCachingDisabled() ? "disabled" : "enabled"),
             Map.entry("punctuation", punctuationType().name().toLowerCase()),
-            Map.entry("TTL age on", ttlBasedOn)
+            Map.entry("TTL age on", ttlBasedOn),
+            Map.entry("TTL", DurationParser.toString(Duration.ofMillis(MAX_TIME_TO_LIVE)))
     );
   }
 

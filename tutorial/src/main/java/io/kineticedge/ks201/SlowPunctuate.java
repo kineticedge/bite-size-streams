@@ -20,66 +20,80 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 public class SlowPunctuate extends BaseTopologyBuilder {
 
-  private static final Logger log = LoggerFactory.getLogger(SlowPunctuate.class);
+    private static final Logger log = LoggerFactory.getLogger(SlowPunctuate.class);
 
-  private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
-  private static final String OUTPUT_TOPIC = "bad-punctuate-output";
+    private static final String OUTPUT_TOPIC = "bad-punctuate-output";
 
-  private static final Duration PUNCTUATE_INTERVAL = Duration.ofSeconds(5L);
-  private static final long MAX_PUNCTUATE_TIME = 500L;
-  private static final long MAX_TIME_TO_LIVE = 10_000L;
+    private static final Duration PUNCTUATE_INTERVAL = Duration.ofSeconds(5L);
+    private static final long MAX_PUNCTUATE_TIME = 500L;
+    private static final long MAX_TIME_TO_LIVE = 10_000L;
 
-  @Override
-  public String applicationId() {
-    return "slow-punctuate";
-  }
-
-  @Override
-  protected void build(StreamsBuilder builder) {
-
-    final String KTABLE_STORE = "process-table-statestore";
-
-    final Materialized<String, OSProcess, KeyValueStore<Bytes, byte[]>> store = Materialized.as(KTABLE_STORE);
-
-    if (isCachingDisabled()) {
-      store.withCachingDisabled();
+    @Override
+    public String applicationId() {
+        return "slow-punctuate";
     }
 
-    builder.<String, OSProcess>stream(Constants.PROCESSES, Consumed.as("processes-source"))
-            .peek(BaseTopologyBuilder::print, Named.as("peek"))
-            .processValues(() -> new ContextualFixedKeyProcessor<String, OSProcess, OSProcess>() {
-                  @Override
-                  public void init(final FixedKeyProcessorContext<String, OSProcess> context) {
-                    super.init(context);
-                    this.context().schedule(PUNCTUATE_INTERVAL, punctuationType(), timestamp -> {
-                      log.info("schedule: timestamp={}, streamTime={}", format(timestamp), format(this.context().currentStreamTimeMs()));
-                      long start = System.currentTimeMillis();
-                      if (this.context().taskId().partition() == 0) {
-                        sleep(1000L);
-                      }
-                      log.info("schedule: done, took {}ms", System.currentTimeMillis() - start);
-                    });
-                  }
-                  @Override
-                  public void process(FixedKeyRecord<String, OSProcess> record) {
-                      //sleep(random.nextLong(5L));
-                      context().forward(record.withValue(record.value()));
-                  }
-            }, Named.as("process-values-with-punctuate"))
-            .repartition(Repartitioned.as("repartitioned"))
-            .peek(BaseTopologyBuilder::print, Named.as("peek-repartitioned"))
-            .to(OUTPUT_TOPIC, Produced.as("output-sink"));
-  }
+    @Override
+    public Map<String, String> metadata() {
+
+        String ttlBasedOn = isFeatureEnabled() ? "stream-time" : "system-time";
+
+        return map(coreMetadata(),
+                Map.entry("caching", isCachingDisabled() ? "disabled" : "enabled"),
+                Map.entry("punctuation", punctuationType().name().toLowerCase()),
+                Map.entry("TTL age on", ttlBasedOn)
+        );
+    }
+
+    @Override
+    protected void build(StreamsBuilder builder) {
+
+        final String KTABLE_STORE = "process-table-statestore";
+
+        final Materialized<String, OSProcess, KeyValueStore<Bytes, byte[]>> store = Materialized.as(KTABLE_STORE);
+
+        if (isCachingDisabled()) {
+            store.withCachingDisabled();
+        }
+
+        builder.<String, OSProcess>stream(Constants.PROCESSES, Consumed.as("processes-source"))
+                .peek(BaseTopologyBuilder::print, Named.as("peek"))
+                .processValues(() -> new ContextualFixedKeyProcessor<String, OSProcess, OSProcess>() {
+                    @Override
+                    public void init(final FixedKeyProcessorContext<String, OSProcess> context) {
+                        super.init(context);
+                        this.context().schedule(PUNCTUATE_INTERVAL, punctuationType(), timestamp -> {
+                            log.info("schedule: timestamp={}, streamTime={}", format(timestamp), format(this.context().currentStreamTimeMs()));
+                            long start = System.currentTimeMillis();
+                            if (this.context().taskId().partition() == 0) {
+                                sleep(1000L);
+                            }
+                            log.info("schedule: done, took {}ms", System.currentTimeMillis() - start);
+                        });
+                    }
+
+                    @Override
+                    public void process(FixedKeyRecord<String, OSProcess> record) {
+                        //sleep(random.nextLong(5L));
+                        context().forward(record.withValue(record.value()));
+                    }
+                }, Named.as("process-values-with-punctuate"))
+                .repartition(Repartitioned.as("repartitioned"))
+                .peek(BaseTopologyBuilder::print, Named.as("peek-repartitioned"))
+                .to(OUTPUT_TOPIC, Produced.as("output-sink"));
+    }
 
 
-  @Override
-  public List<String> topics() {
-    return List.of(OUTPUT_TOPIC);
-  }
+    @Override
+    public List<String> topics() {
+        return List.of(OUTPUT_TOPIC);
+    }
 
 }

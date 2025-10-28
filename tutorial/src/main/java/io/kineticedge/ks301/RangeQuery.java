@@ -38,7 +38,7 @@ public class RangeQuery extends BaseTopologyBuilder {
   @Override
   protected void build(StreamsBuilder builder) {
 
-    final String storeName = "tumbling-window-store";
+    final String storeName = "range-store";
 
     final Serializer<String> prefixScanSerializer = new StringSerializer();
 

@@ -44,7 +44,8 @@ public class VersionedStore extends BaseTopologyBuilder {
     @Override
     public Map<String, String> metadata() {
         return map(coreMetadata(),
-                Map.entry("caching", isCachingDisabled() ? "disabled" : "enabled")        );
+                Map.entry("caching", isCachingDisabled() ? "disabled" : "enabled")
+        );
     }
 
     @Override

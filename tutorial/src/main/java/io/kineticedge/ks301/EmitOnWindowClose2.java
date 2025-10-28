@@ -3,6 +3,7 @@ package io.kineticedge.ks301;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.kineticedge.kstutorial.common.Constants;
 import io.kineticedge.kstutorial.common.main.BaseTopologyBuilder;
+import io.kineticedge.kstutorial.common.streams.util.DurationParser;
 import io.kineticedge.kstutorial.common.streams.util.FixedKeyRecordFactory;
 import io.kineticedge.kstutorial.domain.OSProcess;
 import io.kineticedge.kstutorial.domain.OSProcessCount;
@@ -41,9 +42,22 @@ public class EmitOnWindowClose2 extends BaseTopologyBuilder {
 
   private static final String OUTPUT_TOPIC = "eowc-output";
 
-  @Override
+    private Duration size = Duration.ofSeconds(5L);
+    private Duration grace = Duration.ofSeconds(1L);
+
+    @Override
+    public Map<String, String> metadata() {
+        return map(coreMetadata(),
+                Map.entry("caching", isCachingDisabled() ? "disabled" : "enabled"),
+                Map.entry("emit", emitStrategyType().name()),
+                Map.entry("window-size", DurationParser.toString(size)),
+                Map.entry("window-grace", DurationParser.toString(grace))
+        );
+    }
+
+    @Override
   public String applicationId() {
-    return "eowc-2";
+    return "eowc";
   }
 
   @Override
@@ -67,7 +81,7 @@ public class EmitOnWindowClose2 extends BaseTopologyBuilder {
             .repartition(Repartitioned.as(repartitionedAs))
             //.filter((k, v) -> !k.startsWith("_")) <-- This does not work, advancing stream time is not enough
             .groupByKey(Grouped.as("group-by-key"))
-            .windowedBy(SessionWindows.ofInactivityGapAndGrace(Duration.ofSeconds(5L), Duration.ofSeconds(1L)))
+            .windowedBy(SessionWindows.ofInactivityGapAndGrace(size, grace))
             .emitStrategy(emitStrategy())
             .aggregate(
                     () -> null,

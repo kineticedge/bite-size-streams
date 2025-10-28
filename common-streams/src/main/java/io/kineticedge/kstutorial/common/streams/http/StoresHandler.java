@@ -30,8 +30,11 @@ import java.io.OutputStream;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 public class StoresHandler implements HttpHandler {
 
@@ -328,32 +331,66 @@ public class StoresHandler implements HttpHandler {
 
 //    ReadOnlyKeyValueStore<String, Object> stateStore = kafkaStreams.store(parameters);
 
+      List<Map<String, Object>> records = new ArrayList<>();
+      IntStream.range(0, result.getPartitionResults().size()).forEach(i -> {
+          try (KeyValueIterator<String, VersionedRecord<Object>> storeIterator = result.getPartitionResults().get(i).getResult()) {
+              while (storeIterator.hasNext()) {
+                  var entry = storeIterator.next();
+                  final Pair<Object, String> output = convert(entry.value.value());
+                  final Map<String, Object> record = Map.ofEntries(
+                          Map.entry("key", entry.key),
+                          //Map.entry("timestamp", 0),
+                          Map.entry("value", output.getLeft()),
+                          Map.entry("type", output.getRight()),
+                          Map.entry("timestamp", entry.value.timestamp())
+                  );
 
-    try (OutputStream os = exchange.getResponseBody()) {
+                  records.add(record);
+//                  os.write(JsonUtil.objectMapper().writeValueAsBytes(record));
+//
+//                  if (storeIterator.hasNext()) {
+//                      os.write(",".getBytes());
+//                  }
+              }
+          } catch (Exception e) {
+              log.error("unable to parse", e);
+          }
+      });
+
+
+      try (OutputStream os = exchange.getResponseBody()) {
 
       os.write("[".getBytes());
-      try (KeyValueIterator<String, VersionedRecord<Object>> storeIterator = result.getPartitionResults().get(0).getResult()) {
-        while (storeIterator.hasNext()) {
-          var entry = storeIterator.next();
-          final Pair<Object, String> output = convert(entry.value.value());
-          final Map<String, Object> record = Map.ofEntries(
-                  Map.entry("key", entry.key),
-                  //Map.entry("timestamp", 0),
-                  Map.entry("value", output.getLeft()),
-                  Map.entry("type", output.getRight()),
-                  Map.entry("timestamp", entry.value.timestamp())
-          );
 
-          os.write(JsonUtil.objectMapper().writeValueAsBytes(record));
-
-          if (storeIterator.hasNext()) {
-            os.write(",".getBytes());
+      for (int i = 0; i < records.size(); i++) {
+          if (i > 0) {
+              os.write(",".getBytes());
           }
-        }
-      } catch (Exception e) {
-        log.error("unable to parse", e);
+          os.write(JsonUtil.objectMapper().writeValueAsBytes(records.get(i)));
       }
-      os.write("]".getBytes());
+
+//        try (KeyValueIterator<String, VersionedRecord<Object>> storeIterator = result.getPartitionResults().get(0).getResult()) {
+//            while (storeIterator.hasNext()) {
+//                var entry = storeIterator.next();
+//                final Pair<Object, String> output = convert(entry.value.value());
+//                final Map<String, Object> record = Map.ofEntries(
+//                        Map.entry("key", entry.key),
+//                        //Map.entry("timestamp", 0),
+//                        Map.entry("value", output.getLeft()),
+//                        Map.entry("type", output.getRight()),
+//                        Map.entry("timestamp", entry.value.timestamp())
+//                );
+//
+//                os.write(JsonUtil.objectMapper().writeValueAsBytes(record));
+//
+//                if (storeIterator.hasNext()) {
+//                    os.write(",".getBytes());
+//                }
+//            }
+//        } catch (Exception e) {
+//            log.error("unable to parse", e);
+//        }
+        os.write("]".getBytes());
     } finally {
       exchange.close();
     }

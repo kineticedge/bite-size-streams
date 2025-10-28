@@ -2,6 +2,7 @@ package io.kineticedge.ks201;
 
 import io.kineticedge.kstutorial.common.Constants;
 import io.kineticedge.kstutorial.common.main.BaseTopologyBuilder;
+import io.kineticedge.kstutorial.common.streams.util.DurationParser;
 import io.kineticedge.kstutorial.domain.OSWindow;
 import io.kineticedge.kstutorial.domain.OSWindowAggregate;
 import org.apache.kafka.common.utils.Bytes;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 public class EmitOnChange extends BaseTopologyBuilder {
@@ -30,6 +32,12 @@ public class EmitOnChange extends BaseTopologyBuilder {
     return "resized-window";
   }
 
+    @Override
+    public Map<String, String> metadata() {
+        return map(coreMetadata(),
+                Map.entry("caching", isCachingDisabled() ? "disabled" : "enabled")
+        );
+    }
   @Override
   public List<String> topics() {
     return List.of(OUTPUT_TOPIC);
