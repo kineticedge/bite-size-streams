@@ -1,0 +1,439 @@
+
+.parent {
+    display: flex;
+}
+.left {
+    width: 20%;
+}
+
+.left  #configForm {
+    width: 30%;
+}
+
+.left #panel {
+    font-size: 120%;
+}
+
+.right {
+    border-color: #ff3b30;
+    border-style: solid;
+    border-width: 1px;
+    width: 80%;
+    /*background-color: #ff0000;*/
+
+    height: 100%;
+    /*max-width: 90vw;*/
+    /*max-height: 90vh;*/
+    padding: 0; /* Remove padding if you want the SVG to truly fill the dialog */
+
+}
+
+.canvas-container {
+    /*border-color: #0000dd;*/
+    /*border-style: solid;*/
+    /*border-width: 1px;*/
+
+    /*height: 100%;*/
+    height: 900px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.canvas {
+
+    /*border-color: #009578;*/
+    /*border-style: solid;*/
+    /*border-width: 1px;*/
+
+    flex: 1;
+    width: 100%;
+    min-height: 0; /* Important for flex child to shrink properly */
+}
+
+.dialog {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 650px;
+    height: 420px;
+    background-color: white;
+    border: 1px solid black;
+    /*flex-direction: column;*/
+    overflow: hidden; /* Prevent content overflow */
+    padding: 5px 5px;
+    /*box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);*/
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    transform: none;
+}
+
+/*.dialog {*/
+/*    position: absolute;*/
+/*    min-width: 300px;*/
+/*    min-height: 150px;*/
+/*    background-color: #ffffff;*/
+/*    border: 1px solid #cccccc;*/
+/*    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    overflow: hidden;*/
+/*}*/
+
+.dialog-corner {
+    position: absolute;
+    z-index: 10;
+    background-color: transparent;
+    background-color: rgba(222, 222, 222, 0.4);
+}
+
+.dialog-n, .dialog-s, dialog-e, dialog-w {
+    z-index: 9;
+}
+
+
+
+
+.dialog-header {
+    display: flex;
+    justify-content: flex-start; /* Align close button to the left */
+    align-items: center;
+    padding: 10px;
+    background-color: #f3f3f3; /* Soft gray background for header bar */
+    border-bottom: 1px solid #ccc;
+    user-select: none;
+}
+
+.dialog-close-btn {
+    width: 12px;
+    height: 12px;
+    background-color: #ff5f57; /* macOS close button red */
+    border: 1px solid rgba(0, 0, 0, 0.2); /* Subtle border for 3D effect */
+    border-radius: 50%; /* Make it a circle */
+    cursor: pointer;
+    margin-right: auto;
+}
+
+.dialog-close-btn:hover {
+    background-color: #ff3b30; /* Slightly darker red for hover effect */
+}
+
+.dialog-buttons {
+    height: 12px;
+    margin-left: auto;
+}
+
+.dialog-recycle-btn {
+    text-align: center;
+    fill: #0000ff !important;
+    cursor: pointer;
+}
+
+.dialog-recycle-btn path {
+    fill: #ffffff;
+}
+
+.dialog-recycle-btn:hover path {
+    fill: #ff3b30;
+}
+
+.dialog-clear-btn {
+    text-align: center;
+    /*background-color: #0000ff; !* macOS close button red *!*/
+    cursor: pointer;
+}
+
+.dialog-clear-btn path {
+    fill: #ffffff;
+}
+
+.dialog-clear-btn:hover path {
+    fill: #ff3b30;
+}
+
+/* Menu bar for dragging */
+.dialog-header {
+    background-color: #333;
+    color: white;
+    cursor: move; /* Indicate dragability */
+    padding: 8px 15px;
+    font-size: 26px;
+    user-select: none; /* Prevent text selection */
+}
+
+.dialog-handle {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background-color: #ccc;
+    bottom: 0;
+    right: 0;
+    cursor: nwse-resize; /* Diagonal resize cursor for bottom-right handle */
+}
+
+/* Table in the dialog */
+.dialog-content {
+    padding: 2px;
+    overflow: auto;
+    height: calc(100% - 40px); /* Account for the header height */
+}
+
+.scrollable-table {
+    /*height: 400px;*/
+    /*max-height: 100%;*/
+    max-height: calc(100% - 40px); /* Account for the header height */
+
+    /*flex: 1;*/
+    overflow-y: auto;
+}
+
+.ui-table {
+    table-layout: fixed;
+    width: 100%; /* or a specific width in pixels */
+}
+
+.ui-table th {
+    text-align: left;
+}
+
+/* Set specific widths for columns */
+.ui-table th:nth-child(1),
+.ui-table td:nth-child(1) {
+    width: 20%; /* adjust as needed */
+}
+
+.ui-table th:nth-child(2),
+.ui-table td:nth-child(2) {
+    width: 80%; /* adjust as needed */
+}
+
+.ui-table {
+    border-collapse: collapse;
+    width: 100%;
+    border: solid #ccc 1px;
+}
+
+.ui-table2 {
+    /*table-layout: fixed;*/
+    width: 100%; /* or a specific width in pixels */
+    /*border-collapse: collapse;*/
+    border: 0px;
+    /*font-size: 36px;*/
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.ui-table2 thead th {
+    color: #666666;
+    font-size: smaller;
+    font-weight: bold;
+    text-align: left;
+}
+
+.ui-table2 td:first-child {
+    font-weight: 400; /* bold first column */
+    width: 40%;
+}
+
+.ui-table2 td:nth-child(2) {
+    font-weight: 700; /* normal second column */
+    width: 60%;
+    color: #0000ff;
+}
+
+/*!* Set specific widths for columns *!*/
+/*.ui-table2 th:nth-child(1),*/
+/*.ui-table2 td:nth-child(1) {*/
+/*    width: 40%; !* adjust as needed *!*/
+/*}*/
+
+/*.ui-table2 th:nth-child(2),*/
+/*.ui-table2 td:nth-child(2) {*/
+/*    width: 60%; !* adjust as needed *!*/
+/*}*/
+
+
+/*.ui-table th {*/
+/*    position: sticky;*/
+/*    top: 0;*/
+/*    text-align: left;*/
+/*}*/
+
+.sticky-header {
+    position: sticky;
+    top: 0;
+    text-align: left;
+}
+
+.table {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 24px;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.table th {
+    /*position: sticky;*/
+    top: 0;
+    //background-color: #009578;
+    background-color: #3366E0;
+    color: white;
+    text-align: left;
+}
+
+.table th,
+.table td {
+    padding: 6px 8px;
+    font-weight: normal;
+    white-space: nowrap;
+}
+
+.table tbody tr:nth-of-type(odd) {
+    background-color: #aaa;
+}
+
+.table tbody tr:nth-of-type(even) {
+    background-color: #eee;
+}
+
+
+
+.json-newspaper {
+    /*column-count: 2 !important;        !* Change this to 1, 2, or 3 as needed *!*/
+    /*column-gap: 20px !important;*/
+    white-space: pre-wrap !important;  /* Preserves formatting but allows wrapping */
+    word-break: break-word !important; /* Prevents overflow with long strings */
+    /*font-family: monospace;*/
+    /*font-size: 14px;*/
+    line-height: 1.0 !important;
+}
+
+.xml-newspaper {
+    /*column-count: 2 !important;        !* Change this to 1, 2, or 3 as needed *!*/
+    /*column-gap: 20px !important;*/
+    white-space: pre-wrap !important;  /* Preserves formatting but allows wrapping */
+    word-break: break-word !important; /* Prevents overflow with long strings */
+    /*font-family: monospace;*/
+    /*font-size: 14px;*/
+    line-height: 1.0 !important;
+}
+
+
+.json-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.json-table tbody th {
+    position: relative;
+    text-align: center;
+    background-color:#f8f8f8;
+}
+
+.json-table thead tr {
+    /*text-align: center;*/
+    background-color: #f0f0f0;
+}
+
+
+.json-table th {
+    padding: 6px 8px;
+    border-bottom: 1px solid #ddd;
+    /*background-color: #80CABC;*/
+    color: black;
+    background-color: #B3C4F7;
+}
+
+.json-table td {
+    padding: 6px 8px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    background-color: #dddddd;
+}
+
+.json-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/*.json-nested {*/
+/*    margin: 0;*/
+/*    white-space: pre-wrap;*/
+/*    max-height: 150px;*/
+/*    overflow-y: auto;*/
+/*    background-color: #f9f9f9;*/
+/*    padding: 4px;*/
+/*    border-radius: 3px;*/
+/*    font-family: monospace;*/
+/*    font-size: 12px;*/
+/*    text-align: left;*/
+/*}*/
+
+
+.json-table th, .json-table td,
+.json-table table th, .json-table table td {
+    min-width: 50px; /* Minimum width */
+    max-width: 250px; /* Maximum width */
+    overflow: hidden;
+    text-overflow: ellipsis; /* For text that's too long */
+    white-space: nowrap; /* Optional - keeps content on one line */
+}
+
+
+
+.partition-selector {
+    display: inline-flex;
+    margin-right: 10px;
+}
+
+.partition-btn {
+    padding: 2px 8px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    background-color: #f5f5f5;
+    cursor: pointer;
+}
+
+.partition-btn:first-child {
+    border-radius: 3px 0 0 3px;
+}
+
+.partition-btn:last-child {
+    border-radius: 0 3px 3px 0;
+}
+
+.partition-btn.active {
+    background-color: #0078d7;
+    color: white;
+    border-color: #0078d7;
+}
+
+.dialog-buttons {
+    display: flex;
+    align-items: center;
+}
+
+
+.timestamp-cell {
+    cursor: help;
+}
+
+.timestamp-cell:hover {
+    position: relative;
+    z-index: 1001;
+}
+
+.timestamp-cell:hover::after {
+    content: attr(data-ptimestamp);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    /*font-size: 12px;*/
+    z-index: 1002;
+    margin-bottom: 4px;
+}

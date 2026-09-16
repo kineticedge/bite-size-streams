@@ -1,0 +1,32 @@
+[
+  {
+    "targets": [
+      "host.docker.internal:8080"
+    ],
+    "labels": {
+      "source": "micrometer",
+      "cluster_type": "streams",
+      "job": "streams"
+    }
+  },
+  {
+    "targets": [
+      "host.docker.internal:8088"
+    ],
+    "labels": {
+      "source": "micrometer",
+      "cluster_type": "streams",
+      "job": "ktable"
+    }
+  },
+  {
+    "targets": [
+      "host.docker.internal:8090"
+    ],
+    "labels": {
+      "source": "micrometer",
+      "cluster_type": "streams",
+      "job": "versioned-ktable"
+    }
+  }
+]

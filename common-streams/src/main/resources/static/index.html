@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bite-Size Streams</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/@hpcc-js/wasm@2.16.2/dist/graphviz.umd.js" type="javascript/worker"></script>
+    <script src="https://unpkg.com/d3-graphviz@5.6.0/build/d3-graphviz.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="parent">
+    <div class="left">
+        <div style="margin-bottom: 10px;"><span style="color:blue;font-weight: bold;font-size: 110%;" id="currentTime">&nbsp;</span></div>
+        <div style="margin-bottom: 10px;">
+            <form id="configForm" style="display: inline;">
+                <button type="submit">Emit</button>
+                <select id="dropdown" name="dropdown">
+                </select>
+                <select id="types" name="types">
+                    <option value="all">all (processes 1st)</option>
+                    <option value="processes-delayed">all (windows 1st)</option>
+                    <option value="processes">only processes</option>
+                    <option value="windows">only windows</option>
+                </select>
+                ts-adj<input type="number" id="age" name="age" value="0"/>
+            </form>&nbsp;
+        </div>
+        <div>
+            <span>repeat <input type="checkbox" id="featureToggle"/>every <input type="number"
+                                                                                 id="featureValue"
+                                                                                 min="1" max="60"
+                                                                                 value="1"/> seconds</span>
+        </div>
+        <div id="response"></div>
+        <!--        <br/>-->
+        <!--        <div><span style="color:blue;font-weight: bold;" id="applicationId"></span></div>-->
+        <div id="panel">
+            <table class="ui-table2">
+                <thead>
+                <tr>
+                    <th colspan="2">Stream Settings</th>
+                </tr>
+                </thead>
+                <tbody id="metadata">
+                <!-- Rows will be dynamically populated here -->
+                </tbody>
+            </table>
+            <table class="ui-table2">
+                <thead>
+                <tr>
+                    <th colspan="2">Producer Settings</th>
+                </tr>
+                </thead>
+                <tbody id="producerMetadata">
+                <!-- Rows will be dynamically populated here -->
+                </tbody>
+            </table>
+            <table id="subtopologyTable" class="ui-table">
+                <thead>
+                <tr>
+                    <th>task</th>
+                    <th>event time</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Rows will be dynamically populated here -->
+                </tbody>
+            </table>
+            <table id="commitTable" class="ui-table">
+                <thead>
+                <tr>
+                    <th>t</th>
+                    <th>commit time</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Rows will be dynamically populated here -->
+                </tbody>
+            </table>
+            <table id="taskTable" class="ui-table">
+                <thead>
+                <tr>
+                    <th>t</th>
+                    <th>tasks</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Rows will be dynamically populated here -->
+                </tbody>
+            </table>
+<!--            <div><span style="color:green;font-weight: bold;" id="currentTime">&nbsp;</span></div>-->
+        </div>
+    </div>
+    <div class="right">
+        <div id="graph-container" class="canvas-container">
+            <div id="graph" class="canvas">
+            </div>
+        </div>
+        <!--        <div><span style="color:green;font-weight: bold;" id="currentTime">&nbsp;</span></div>-->
+    </div>
+</div>
+<!--<div>-->
+<!--    <form id="poisonPill" style="display: inline; ">-->
+<!--        <button type="submit">☠️💊</button>-->
+<!--    </form>&nbsp;-->
+<!--</div>-->
+<script src="common.js"></script>
+<script src="topology.js"></script>
+<script src="ws_client.js"></script>
+<script src="ws.js"></script>
+<script src="statestores.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

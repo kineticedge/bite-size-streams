@@ -1,0 +1,216 @@
+#!/bin/sh
+
+
+calc_interval() {
+  local hr="$1"
+  local interval
+  # RocksDbVersionedKeyValueBytesStoreSupplier.defaultSegmentInterval
+  if (( hr <= 60000 )); then
+    # ≤ 60 seconds
+    interval=$(( hr / 3 ))
+    (( interval < 2000 )) && interval=2000
+  elif (( hr <= 300000 )); then
+    # ≤ 5 minutes
+    interval=$(( hr / 5 ))
+    (( interval < 20000 )) && interval=20000
+  elif (( hr <= 3600000 )); then
+    # ≤ 1 hour
+    interval=$(( hr / 12 ))
+    (( interval < 60000 )) && interval=60000
+  else
+    # > 1 hour
+    interval=$(( hr / 24 ))
+    (( interval < 300000 )) && interval=300000
+  fi
+  echo "$interval"
+}
+
+
+format_ts() {
+  local sec=$1
+  local ms=$2
+
+  if date -r "$sec" "+%Y-%m-%d %H:%M:%S" >/dev/null 2>&1; then
+    # macOS / BSD
+    date -r "$sec" "+%Y-%m-%d %H:%M:%S" | awk -v ms="$ms" '{printf "%s.%03d\n", $0, ms}'
+  else
+    # BusyBox / GNU
+    date -d "@$sec" "+%Y-%m-%d %H:%M:%S" | awk -v ms="$ms" '{printf "%s.%03d\n", $0, ms}'
+  fi
+}
+
+
+# helper: convert 16 hex chars to signed 64-bit decimal
+hex_to_i64() {
+  local u=$(printf "%u" "0x$1")
+  if (( u >= 0x8000000000000000 )); then
+    echo $((u - 0x10000000000000000))
+  else
+    echo $u
+  fi
+}
+
+
+
+# helper: convert 8 hex chars to signed 32-bit decimal
+hex_to_i32() {
+  local hex="$1"
+  local dec=$(printf "%d" "0x$hex")
+  echo "$dec"
+}
+hex_to_ts() {
+  local raw_ms
+  raw_ms=$(hex_to_i64 "$1")
+
+  local sec=$(( raw_ms / 1000 ))
+  local ms=$(( raw_ms % 1000 ))
+  (( ms < 0 )) && { ms=$((ms + 1000)); sec=$((sec - 1)); }
+
+  # BusyBox/macOS: -r works, but only with integer seconds
+  local base
+  base=$(date -r "$sec" '+%Y-%m-%d %H:%M:%S')
+
+  printf "%s.%03d\n" "$base" "$ms"
+}
+
+to_ts() {
+  raw_ms=$1
+
+  local sec=$(( raw_ms / 1000 ))
+  local ms=$(( raw_ms % 1000 ))
+  (( ms < 0 )) && { ms=$((ms + 1000)); sec=$((sec - 1)); }
+
+  # BusyBox/macOS: -r works, but only with integer seconds
+  local base
+  base=$(date -r "$sec" '+%Y-%m-%d %H:%M:%S')
+
+  printf "%s.%03d\n" "$base" "$ms"
+}
+
+#
+#
+#
+#
+
+RETENTION=$1
+shift
+
+SEGMENT_INTERVAL=$(calc_interval "$RETENTION")
+
+
+while IFS= read LINE; do
+
+  LEFT=$(echo $LINE | awk '{print $1}')
+  RIGHT=$(echo $LINE | awk '{print $3}')
+
+  LEFT=${LEFT:2}
+  RIGHT=${RIGHT:2}
+  echo $LEFT
+  x=$(hex_to_i64 ${LEFT:0:16})
+
+if [[ $x == -1 ]]; then
+  
+  TS=$(hex_to_i64 ${RIGHT:0:16})
+  JSON_VALUE=$(echo 0x"${RIGHT:16}" | xxd -r -p)
+  #echo "XXX " $(hex_to_ts ${RIGHT:0:16})
+  #echo $(date -r $(echo ${TS} / 1000 | bc))
+
+  echo ""
+  echo "**RECORD** rocksdb_key=[segment=$(hex_to_i64 ${LEFT:0:16}), key=$(echo ${LEFT:16} | xxd -r -p)]"
+  echo "___ -1 ___"
+  echo $(to_ts $TS)
+  echo $JSON_VALUE
+  continue
+fi
+
+HEXVALUE=$RIGHT
+
+# read next_ts (first 16 hex chars)
+NEXT_TS_HEX="${HEXVALUE:0:16}"
+NEXT_TS=$(hex_to_i64 "$NEXT_TS_HEX")
+
+# read min_ts (next 16 hex chars)
+MIN_TS_HEX="${HEXVALUE:16:16}"
+MIN_TS=$(hex_to_i64 "$MIN_TS_HEX")
+
+SEGMENT_ID=$(hex_to_i64 ${LEFT:0:16})
+
+
+SEGMENT_START_MS=$(( SEGMENT_ID * SEGMENT_INTERVAL ))
+SEGMENT_END_MS=$(( SEGMENT_START_MS + SEGMENT_INTERVAL - 1 ))
+start_sec=$(( SEGMENT_START_MS / 1000 ))
+start_ms=$(( SEGMENT_START_MS % 1000 ))
+end_sec=$(( SEGMENT_END_MS / 1000 ))
+end_ms=$(( SEGMENT_END_MS % 1000 ))
+SEGMENT_START_HUMAN=$(format_ts "$start_sec" "$start_ms")
+SEGMENT_END_HUMAN=$(format_ts "$end_sec" "$end_ms")
+
+
+echo ""
+echo "**RECORD** rocksdb_key=[segment=$SEGMENT_ID, key=$(echo ${LEFT:16} | xxd -r -p)], [$SEGMENT_START_HUMAN - $SEGMENT_END_HUMAN]"
+echo "NEXT_TS = $(to_ts $NEXT_TS)"
+echo "MIN_TS  = $(to_ts $MIN_TS)"
+
+
+
+# offset now at 32 hex chars (16 bytes)
+OFFSET=32
+
+INDEX=0
+TS_LIST=()
+SIZE_LIST=()
+
+while true; do
+  TS_HEX="${HEXVALUE:$OFFSET:16}"
+  TS=$(hex_to_i64 "$TS_HEX")
+
+  SIZE_HEX="${HEXVALUE:$((OFFSET+16)):8}"
+  SIZE=$(hex_to_i32 "$SIZE_HEX")
+
+  #echo "[$INDEX] ts=$TS size=$SIZE"
+  echo "[$(printf '%3d' "$INDEX")] ts='$(to_ts $TS)' length=$SIZE"
+
+  TS_LIST+=("$TS")
+  SIZE_LIST+=("$SIZE")
+
+  OFFSET=$((OFFSET + 24))   # 16 hex for ts + 8 hex for size
+
+  # stop when ts == min_ts
+  if [[ "$TS" -eq "$MIN_TS" ]]; then
+    break
+  fi
+
+  INDEX=$((INDEX+1))
+done
+
+echo "Index entries read: $((INDEX+1))"
+echo "Payload starts at hex offset: $OFFSET"
+
+
+PAYLOAD_OFFSET=$OFFSET
+COUNT=${#SIZE_LIST[@]}
+
+echo "Payload contains $COUNT values"
+echo
+
+# walk values in forward order (oldest → newest)
+for (( i=COUNT-1; i>=0; i-- )); do
+  SIZE=${SIZE_LIST[$i]}
+  TS=${TS_LIST[$i]}
+
+  # extract SIZE bytes = SIZE*2 hex chars
+  HEX_CHUNK="${HEXVALUE:$PAYLOAD_OFFSET:$((SIZE*2))}"
+
+  # convert hex → raw bytes → JSON
+  JSON_VALUE=$(echo "$HEX_CHUNK" | xxd -r -p)
+
+  echo "[$(printf '%3d' "$i")]"
+  echo "      $JSON_VALUE"
+  PAYLOAD_OFFSET=$((PAYLOAD_OFFSET + SIZE*2))
+done
+
+
+
+
+done
+
